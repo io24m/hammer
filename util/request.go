@@ -2,7 +2,10 @@ package util
 
 import (
 	"github.com/io24m/hammer/shared"
+	"io/ioutil"
 	"math/rand"
+	"net/http"
+	"strings"
 	"time"
 )
 
@@ -52,9 +55,31 @@ func UserAgent(ua ...UserAgentType) (res string) {
 	return
 }
 
-func CreatRequest(method string, url shared.ServiceUrl, data interface{}, options interface{}) (res func() string) {
-	res = func() string {
-		return string(url)
+func CreatRequest(method, url string, data interface{}, options *shared.Options) func() (string, error) {
+	res := func() (string, error) {
+		client := &http.Client{}
+		method = strings.ToUpper(method)
+		req, _ := http.NewRequest(method, url, nil)
+		req.Header.Add("User-Agent", UserAgent())
+		if method == "POST" {
+			req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+		}
+		if strings.Contains(url, "music.163.com") {
+			req.Header.Add("Referer", "https://music.163.com")
+		}
+		if options.Cookies != nil {
+			for _, c := range options.Cookies {
+				req.AddCookie(c)
+			}
+		}
+
+		resp, err := client.Do(req)
+		if err != nil {
+			return "", err
+		}
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		return string(body), nil
 	}
-	return
+	return res
 }

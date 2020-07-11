@@ -1,14 +1,24 @@
 package shared
 
+import (
+	"io"
+	"net/http"
+	"net/url"
+)
+
 type Query struct {
-	Cookie interface{}
-	Param  interface{}
-	Body   interface{}
+	Cookies []*http.Cookie
+	Param   url.Values
+	Body    io.ReadCloser
 }
 
-type ServiceUrl string
+type Options struct {
+	Crypto  string
+	Cookies []*http.Cookie
+	Proxy   interface{}
+}
 
 const (
-	POST  string     = "POST"
-	LOGIN ServiceUrl = "https://music.163.com/weapi/login"
+	POST  string = "POST"
+	LOGIN string = "https://music.163.com/weapi/login"
 )
