@@ -1,8 +1,7 @@
-package util
+package hammer
 
 import (
-	"github.com/io24m/hammer/shared"
-	"io/ioutil"
+	"fmt"
 	"math/rand"
 	"net/http"
 	"strings"
@@ -55,12 +54,15 @@ func UserAgent(ua ...UserAgentType) (res string) {
 	return
 }
 
-func CreatRequest(method, url string, data interface{}, options *shared.Options) func() (string, error) {
-	res := func() (string, error) {
+func CreatRequest(method, url string, data interface{}, options *Options) func() (*http.Response, error) {
+	res := func() (*http.Response, error) {
 		client := &http.Client{}
 		method = strings.ToUpper(method)
-		req, _ := http.NewRequest(method, url, nil)
-		req.Header.Add("User-Agent", UserAgent())
+		req, err := http.NewRequest(method, url, nil)
+		if err != nil {
+			panic(err)
+		}
+		req.Header.Add("User-Agent", UserAgent(options.Ua))
 		if method == "POST" {
 			req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 		}
@@ -72,14 +74,22 @@ func CreatRequest(method, url string, data interface{}, options *shared.Options)
 				req.AddCookie(c)
 			}
 		}
+		var csrf_token string
+		if options.Crypto == "weapi" {
+			csrfToken, err := req.Cookie("_csrf")
+			if err != nil {
 
+			}
+			csrf_token = csrfToken.Value
+			fmt.Println(csrf_token)
+		}
 		resp, err := client.Do(req)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		return string(body), nil
+		//defer resp.Body.Close()
+		//body, err := ioutil.ReadAll(resp.Body)
+		return resp, nil
 	}
 	return res
 }

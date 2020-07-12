@@ -2,14 +2,11 @@ package hammer
 
 import (
 	"fmt"
-	"github.com/io24m/hammer/service"
-	"github.com/io24m/hammer/shared"
-	"github.com/io24m/hammer/util"
 	"net/http"
 )
 
 func Run() {
-	cfg := util.Config()
+	cfg := Config()
 	http.HandleFunc("/", indexHandler)
 	http.ListenAndServe("127.0.0.1:"+cfg.Port, nil)
 }
@@ -30,7 +27,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	r.Cookies()
-	var query = &shared.Query{
+	var query = &Query{
 		Cookies: r.Cookies(),
 		Body:    r.Body,
 		Param:   r.URL.Query(),
@@ -44,9 +41,9 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-var url2func map[string]func(*shared.Query) (string, error)
+var url2func map[string]func(*Query) (string, error)
 
 func init() {
-	url2func = make(map[string]func(*shared.Query) (string, error))
-	url2func["/login"] = service.Login
+	url2func = make(map[string]func(*Query) (string, error))
+	url2func["/login"] = Login
 }
