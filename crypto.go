@@ -4,8 +4,12 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
+	"encoding/pem"
 )
 
 const (
@@ -19,7 +23,7 @@ const (
 func key(len int) (res []byte) {
 	res = make([]byte, 0)
 	for i := 0; i < len; i++ {
-		res = append(res, base62[r.Intn(64)])
+		res = append(res, base62[r.Intn(63)])
 	}
 	return
 }
@@ -31,16 +35,33 @@ func reverseKey(key []byte) []byte {
 	}
 	return a
 }
+func rsaEncrypt(data, key []byte) string {
+	//解密pem格式的公钥
+	block, _ := pem.Decode([]byte(key))
+	if block == nil {
+		return ""
+	}
+	// 解析公钥
+	pubInterface, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		return ""
+	}
+	// 类型断言
+	pub := pubInterface.(*rsa.PublicKey)
+	//加密
+	v15, _ := rsa.EncryptPKCS1v15(rand.Reader, pub, data)
+	return string(v15)
+}
 
 func weapiEncrypt(data interface{}) (res map[string]interface{}) {
 	res = make(map[string]interface{})
 	jsonStr, _ := json.Marshal(data)
 	secretKey := key(16)
-	//i := reverseKey(secretKey)
+	rKey := reverseKey(secretKey)
 	encrypt, _ := Aes128Encrypt(jsonStr, []byte(presetKey), []byte(ivParameter))
 	aes128Encrypt, _ := Aes128Encrypt(encrypt, secretKey, []byte(ivParameter))
 	res["params"] = aes128Encrypt
-	res["encSecKey"] = nil
+	res["encSecKey"] = rsaEncrypt([]byte(rKey), []byte(publicKey))
 	return
 }
 
