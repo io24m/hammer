@@ -10,29 +10,27 @@ import (
 )
 
 func Login(query *Query) (string, error) {
-
 	var data = make(map[string]interface{})
 	data["username"] = query.Param.Get("email")
 	if md5Password := query.Param.Get("md5_password"); strings.TrimSpace(md5Password) != "" {
 		data["password"] = md5Password
 	} else {
 		pw := query.Param.Get("password")
-		hash := md5.New()
-		hash.Write([]byte(pw))
-		data["password"] = hex.EncodeToString(hash.Sum(nil))
+		sum := md5.Sum([]byte(pw))
+		data["password"] = hex.EncodeToString(sum[:])
 	}
+	data["rememberLogin"] = "true"
 	query.Cookies = append(query.Cookies, &http.Cookie{
 		Name:  "os",
 		Value: "pc",
 	})
 	var options = &Options{
 		Crypto:  "weapi",
+		Ua:      Pc,
 		Cookies: query.Cookies,
 		Proxy:   query.Proxy,
-		Ua:      Pc,
 	}
-	request := CreatRequest(POST, LOGIN, data, options)
-	resp, err := request()
+	resp, err := requestCloudMusicApi(POST, LOGIN, data, options)
 	if err != nil {
 		return "", err
 	}

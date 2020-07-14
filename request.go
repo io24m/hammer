@@ -2,7 +2,6 @@ package hammer
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
@@ -59,107 +58,100 @@ func UserAgent(ua ...UserAgentType) (res string) {
 	return
 }
 
-func CreatRequest(method, url string, data map[string]interface{}, options *Options) func() (*http.Response, error) {
-
-	res := func() (*http.Response, error) {
-		method = strings.ToUpper(method)
-		req, err := http.NewRequest(method, url, nil)
-		if err != nil {
-			panic(err)
-		}
-		//header := http.Header{}
-		header := req.Header
-		header.Add("User-Agent", UserAgent(options.Ua))
-		if method == "POST" {
-			header.Add("Content-Type", "application/x-www-form-urlencoded")
-		}
-		if strings.Contains(url, "music.163.com") {
-			header.Add("Referer", "https://music.163.com")
-		}
-		for _, v := range options.Cookies {
-			req.AddCookie(v)
-		}
-		if header.Get("Cookie") == "" {
-			header.Set("Cookie", options.Token)
-		}
-		if options.Crypto == "weapi" {
-			var csrf_token string
-			reg, _ := regexp.Compile(`_csrf=([^(;|$)]+)`)
-			for _, v := range req.Cookies() {
-				csrfCookie := reg.FindString(v.Name)
-				if csrfCookie != "" {
-					csrf_token = csrfCookie
-					break
-				}
-			}
-			data["csrf_token"] = csrf_token
-			data = weapiEncrypt(data)
-			reg, _ = regexp.Compile(`\w*api`)
-			url = reg.ReplaceAllString(url, "weapi")
-		} else if options.Crypto == "linuxapi" {
-			reg, _ := regexp.Compile(`\w*api`)
-			m := make(map[string]interface{})
-			m["method"] = method
-			m["url"] = reg.ReplaceAllString(url, "api")
-			m["params"] = data
-			data = linuxapiEncrypt(m)
-			header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36")
-			url = "https://music.163.com/api/linux/forward"
-		} else if options.Crypto == "eapi" {
-			var dataHeader = http.Header{}
-			dataHeader.Add("osver", GetCookie(options.Cookies, "osver"))
-			dataHeader.Add("deviceId", GetCookie(options.Cookies, "deviceId"))
-			dataHeader.Add("appver", GetCookie(options.Cookies, "appver", "6.1.1"))
-			dataHeader.Add("versioncode", GetCookie(options.Cookies, "versioncode", "140"))
-			dataHeader.Add("mobilename", GetCookie(options.Cookies, "mobilename"))
-			dataHeader.Add("buildver", GetCookie(options.Cookies, "buildver"))
-			dataHeader.Add("resolution", GetCookie(options.Cookies, "resolution", "1920x1080"))
-			dataHeader.Add("__csrf", GetCookie(options.Cookies, "__csrf"))
-			dataHeader.Add("os", GetCookie(options.Cookies, "os", "android"))
-			dataHeader.Add("channel", GetCookie(options.Cookies, "channel"))
-			dataHeader.Add("channel", GetCookie(options.Cookies, "channel"))
-			dataHeader.Add("requestId", fmt.Sprintf("%d_%04d", time.Now().UnixNano()/1000000, r.Intn(1000)))
-			if c := GetCookie(options.Cookies, "MUSIC_U"); c != "" {
-				dataHeader.Add("MUSIC_U", c)
-			}
-			if c := GetCookie(options.Cookies, "MUSIC_A"); c != "" {
-				dataHeader.Add("MUSIC_A", c)
-			}
-			req.Header.Set("Cookie", "")
-			for k, v := range dataHeader {
-				req.AddCookie(&http.Cookie{
-					Name:  k,
-					Value: v[0],
-				})
-			}
-			data["header"] = dataHeader
-			data = eapiEncrypt(options.Url, data)
-			reg, _ := regexp.Compile(`\w*api`)
-			url = reg.ReplaceAllString(url, "eapi")
-		}
-		u, _ := urlpkg.Parse(url)
-		req.URL = u
-		req.Host = u.Host
-		//todo:参数格式化
-		jsondata, _ := json.Marshal(data)
-		buf := new(bytes.Buffer)
-		buf.Write(jsondata)
-		req.Body = ioutil.NopCloser(buf)
-		client := &http.Client{}
-		resp, err := client.Do(req)
-		if err != nil {
-			return nil, err
-		}
-		return resp, nil
+func requestCloudMusicApi(method, url string, data map[string]interface{}, options *Options) (*http.Response, error) {
+	method = strings.ToUpper(method)
+	req, err := http.NewRequest(method, url, nil)
+	if err != nil {
+		return nil, err
 	}
-	return res
+	header := req.Header
+	header.Add("User-Agent", UserAgent(options.Ua))
+	if method == "POST" {
+		header.Add("Content-Type", "application/x-www-form-urlencoded")
+	}
+	if strings.Contains(url, "music.163.com") {
+		header.Add("Referer", "https://music.163.com")
+	}
+	for _, v := range options.Cookies {
+		req.AddCookie(v)
+	}
+	if header.Get("Cookie") == "" {
+		header.Set("Cookie", options.Token)
+	}
+	if options.Crypto == "weapi" {
+		var csrf_token string
+		reg, _ := regexp.Compile(`_csrf=([^(;|$)]+)`)
+		for _, v := range req.Cookies() {
+			csrfCookie := reg.FindString(v.Name)
+			if csrfCookie != "" {
+				csrf_token = csrfCookie
+				break
+			}
+		}
+		data["csrf_token"] = csrf_token
+		data = weapiEncrypt(data)
+		reg, _ = regexp.Compile(`\w*api`)
+		url = reg.ReplaceAllString(url, "weapi")
+	} else if options.Crypto == "linuxapi" {
+		reg, _ := regexp.Compile(`\w*api`)
+		m := make(map[string]interface{})
+		m["method"] = method
+		m["url"] = reg.ReplaceAllString(url, "api")
+		m["params"] = data
+		data = linuxapiEncrypt(m)
+		header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36")
+		url = "https://music.163.com/api/linux/forward"
+	} else if options.Crypto == "eapi" {
+		var dataHeader = http.Header{}
+		dataHeader.Add("osver", GetCookie(options.Cookies, "osver"))
+		dataHeader.Add("deviceId", GetCookie(options.Cookies, "deviceId"))
+		dataHeader.Add("appver", GetCookie(options.Cookies, "appver", "6.1.1"))
+		dataHeader.Add("versioncode", GetCookie(options.Cookies, "versioncode", "140"))
+		dataHeader.Add("mobilename", GetCookie(options.Cookies, "mobilename"))
+		dataHeader.Add("buildver", GetCookie(options.Cookies, "buildver"))
+		dataHeader.Add("resolution", GetCookie(options.Cookies, "resolution", "1920x1080"))
+		dataHeader.Add("__csrf", GetCookie(options.Cookies, "__csrf"))
+		dataHeader.Add("os", GetCookie(options.Cookies, "os", "android"))
+		dataHeader.Add("channel", GetCookie(options.Cookies, "channel"))
+		dataHeader.Add("channel", GetCookie(options.Cookies, "channel"))
+		dataHeader.Add("requestId", fmt.Sprintf("%d_%04d", time.Now().UnixNano()/1000000, r.Intn(1000)))
+		if c := GetCookie(options.Cookies, "MUSIC_U"); c != "" {
+			dataHeader.Add("MUSIC_U", c)
+		}
+		if c := GetCookie(options.Cookies, "MUSIC_A"); c != "" {
+			dataHeader.Add("MUSIC_A", c)
+		}
+		req.Header.Set("Cookie", "")
+		for k, v := range dataHeader {
+			req.AddCookie(&http.Cookie{
+				Name:  k,
+				Value: v[0],
+			})
+		}
+		data["header"] = dataHeader
+		data = eapiEncrypt(options.Url, data)
+		reg, _ := regexp.Compile(`\w*api`)
+		url = reg.ReplaceAllString(url, "eapi")
+	}
+	u, _ := urlpkg.Parse(url)
+	req.URL = u
+	req.Host = u.Host
+	param := GetQueryParam(data)
+	buf := new(bytes.Buffer)
+	buf.Write([]byte(param))
+	req.Body = ioutil.NopCloser(buf)
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
 }
 
 func GetCookie(cookies []*http.Cookie, name string, defaultValue ...string) string {
 	for _, v := range cookies {
 		if v.Name == name {
 			return v.Value
-			break
 		}
 	}
 	if defaultValue == nil || len(defaultValue) == 0 {

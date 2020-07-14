@@ -10,7 +10,7 @@ import (
 func TestRun(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(indexHandler))
 	defer server.Close()
-	get, err := http.Get(server.URL + "/login?username=asdf&password=123123")
+	get, err := http.Get(server.URL + "/login?email=xxx@163.com&password=yyy")
 	if err != nil {
 		panic(err)
 	}
