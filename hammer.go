@@ -20,7 +20,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("url:", r.URL.Query())
 	fmt.Println("header:", r.Header)
 	fmt.Println("body:", r.Body)
-	//login := service.Login(nil)
 	f := url2func[r.URL.Path]
 	if f == nil {
 		w.Write([]byte("启动服务成功"))
