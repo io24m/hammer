@@ -26,6 +26,7 @@ func key(len int) (res []byte) {
 	for i := 0; i < len; i++ {
 		res = append(res, base62[r.Intn(61)])
 	}
+	//res = []byte("FH6R9lJBgejvZMX2")
 	return
 }
 func reverseKey(key []byte) []byte {
@@ -67,6 +68,7 @@ func rsaEncrypt(data, key []byte) string {
 func weapiEncrypt(data interface{}) (res map[string]interface{}) {
 	res = make(map[string]interface{})
 	jsonStr, _ := json.Marshal(data)
+	jsonStr = []byte(`{"username":"xxx","password":"f0a4058fd33489695d53df156b77c724","rememberLogin":"true","csrf_token":""}`)
 	secretKey := key(16)
 	rKey := reverseKey(secretKey)
 	encrypt := aesCbcEncrypt(jsonStr, []byte(presetKey), []byte(ivParameter))

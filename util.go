@@ -26,6 +26,6 @@ func queryParam(data interface{}) (res []string) {
 
 func GetQueryParam(data interface{}) string {
 	param := queryParam(data)
-	join := strings.Join(param, ";")
+	join := strings.Join(param, "&")
 	return join
 }

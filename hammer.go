@@ -9,7 +9,7 @@ func Run() {
 	cfg := Config()
 	http.HandleFunc("/", indexHandler)
 	http.ListenAndServe("127.0.0.1:"+cfg.Port, nil)
-}
+} 
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(r.RemoteAddr, "连接成功")
