@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
-	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
-	"encoding/hex"
 	"encoding/json"
 	"encoding/pem"
+	"fmt"
+	"math/big"
 )
 
 const (
@@ -24,7 +24,7 @@ const (
 func key(len int) (res []byte) {
 	res = make([]byte, 0)
 	for i := 0; i < len; i++ {
-		res = append(res, base62[r.Intn(63)])
+		res = append(res, base62[r.Intn(61)])
 	}
 	return
 }
@@ -49,10 +49,19 @@ func rsaEncrypt(data, key []byte) string {
 	}
 	// 类型断言
 	pub := pubInterface.(*rsa.PublicKey)
-	//加密
-	v15, _ := rsa.EncryptPKCS1v15(rand.Reader, pub, data)
-	toString := hex.EncodeToString(v15)
-	return toString
+
+	biText := new(big.Int).SetBytes(data)
+	biE := big.NewInt(int64(pub.E))
+	biN := pub.N
+	c := new(big.Int)
+	exp := c.Exp(biText, biE, biN)
+
+	biRet := fmt.Sprintf("%x", exp)
+	for len(biRet) < 256 {
+		biRet = "0" + biRet
+	}
+	//fmt.Println(biRet)
+	return biRet
 }
 
 func weapiEncrypt(data interface{}) (res map[string]interface{}) {
@@ -60,9 +69,9 @@ func weapiEncrypt(data interface{}) (res map[string]interface{}) {
 	jsonStr, _ := json.Marshal(data)
 	secretKey := key(16)
 	rKey := reverseKey(secretKey)
-	encrypt := AES_CBC_Encrypt(jsonStr, []byte(presetKey), []byte(ivParameter))
+	encrypt := aesCbcEncrypt(jsonStr, []byte(presetKey), []byte(ivParameter))
 	b64 := base64.StdEncoding.EncodeToString(encrypt)
-	aes128Encrypt := AES_CBC_Encrypt([]byte(b64), secretKey, []byte(ivParameter))
+	aes128Encrypt := aesCbcEncrypt([]byte(b64), secretKey, []byte(ivParameter))
 	b64 = base64.StdEncoding.EncodeToString(aes128Encrypt)
 	res["params"] = b64
 	res["encSecKey"] = rsaEncrypt([]byte(rKey), []byte(publicKey))
@@ -81,91 +90,62 @@ func decrypt(data interface{}) interface{} {
 	return nil
 }
 
-////加密
-//func PswEncrypt(src string) string {
-//	key := []byte(sKey)
-//	iv := []byte(ivParameter)
-//	result, err := Aes128Encrypt([]byte(src), key, iv)
-//	if err != nil {
-//		panic(err)
+//func Aes128Encrypt(origData, key, IV []byte) ([]byte, error) {
+//	if key == nil || len(key) != 16 {
+//		return nil, nil
 //	}
-//	return base64.RawStdEncoding.EncodeToString(result)
+//	if IV != nil && len(IV) != 16 {
+//		return nil, nil
+//	}
+//
+//	block, err := aes.NewCipher(key)
+//	if err != nil {
+//		return nil, err
+//	}
+//	blockSize := block.BlockSize()
+//	origData = PKCS5Padding(origData, blockSize)
+//	blockMode := cipher.NewCBCEncrypter(block, IV[:blockSize])
+//	crypted := make([]byte, len(origData))
+//	// 根据CryptBlocks方法的说明，如下方式初始化crypted也可以
+//	blockMode.CryptBlocks(crypted, origData)
+//	return crypted, nil
 //}
 //
-////解密
-//func PswDecrypt(src string) string {
-//	key := []byte(sKey)
-//	iv := []byte(ivParameter)
-//	var result []byte
-//	var err error
-//	result, err = base64.RawStdEncoding.DecodeString(src)
-//	if err != nil {
-//		panic(err)
+//func Aes128Decrypt(crypted, key []byte, IV []byte) ([]byte, error) {
+//	if key == nil || len(key) != 16 {
+//		return nil, nil
 //	}
-//	origData, err := Aes128Decrypt(result, key, iv)
-//	if err != nil {
-//		panic(err)
+//	if IV != nil && len(IV) != 16 {
+//		return nil, nil
 //	}
-//	return string(origData)
 //
+//	block, err := aes.NewCipher(key)
+//	if err != nil {
+//		return nil, err
+//	}
+//	blockSize := block.BlockSize()
+//	blockMode := cipher.NewCBCDecrypter(block, IV[:blockSize])
+//	origData := make([]byte, len(crypted))
+//	blockMode.CryptBlocks(origData, crypted)
+//	origData = PKCS5UnPadding(origData)
+//	return origData, nil
 //}
-
-func Aes128Encrypt(origData, key, IV []byte) ([]byte, error) {
-	if key == nil || len(key) != 16 {
-		return nil, nil
-	}
-	if IV != nil && len(IV) != 16 {
-		return nil, nil
-	}
-
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		return nil, err
-	}
-	blockSize := block.BlockSize()
-	origData = PKCS5Padding(origData, blockSize)
-	blockMode := cipher.NewCBCEncrypter(block, IV[:blockSize])
-	crypted := make([]byte, len(origData))
-	// 根据CryptBlocks方法的说明，如下方式初始化crypted也可以
-	blockMode.CryptBlocks(crypted, origData)
-	return crypted, nil
-}
-
-func Aes128Decrypt(crypted, key []byte, IV []byte) ([]byte, error) {
-	if key == nil || len(key) != 16 {
-		return nil, nil
-	}
-	if IV != nil && len(IV) != 16 {
-		return nil, nil
-	}
-
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		return nil, err
-	}
-	blockSize := block.BlockSize()
-	blockMode := cipher.NewCBCDecrypter(block, IV[:blockSize])
-	origData := make([]byte, len(crypted))
-	blockMode.CryptBlocks(origData, crypted)
-	origData = PKCS5UnPadding(origData)
-	return origData, nil
-}
-
-func PKCS5Padding(ciphertext []byte, blockSize int) []byte {
-	padding := blockSize - len(ciphertext)%blockSize
-	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
-	return append(ciphertext, padtext...)
-}
-
-func PKCS5UnPadding(origData []byte) []byte {
-	length := len(origData)
-	// 去掉最后一个字节 unpadding 次
-	unpadding := int(origData[length-1])
-	return origData[:(length - unpadding)]
-}
+//
+//func PKCS5Padding(ciphertext []byte, blockSize int) []byte {
+//	padding := blockSize - len(ciphertext)%blockSize
+//	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
+//	return append(ciphertext, padtext...)
+//}
+//
+//func PKCS5UnPadding(origData []byte) []byte {
+//	length := len(origData)
+//	// 去掉最后一个字节 unpadding 次
+//	unpadding := int(origData[length-1])
+//	return origData[:(length - unpadding)]
+//}
 
 //对明文进行填充
-func Padding(plainText []byte, blockSize int) []byte {
+func padding(plainText []byte, blockSize int) []byte {
 	//计算要填充的长度
 	n := blockSize - len(plainText)%blockSize
 	//对原来的明文填充n个n
@@ -175,7 +155,7 @@ func Padding(plainText []byte, blockSize int) []byte {
 }
 
 //对密文删除填充
-func UnPadding(cipherText []byte) []byte {
+func unPadding(cipherText []byte) []byte {
 	//取出密文最后一个字节end
 	end := cipherText[len(cipherText)-1]
 	//删除填充
@@ -184,14 +164,14 @@ func UnPadding(cipherText []byte) []byte {
 }
 
 //AEC加密（CBC模式）
-func AES_CBC_Encrypt(plainText, key, iv []byte) []byte {
+func aesCbcEncrypt(plainText, key, iv []byte) []byte {
 	//指定加密算法，返回一个AES算法的Block接口对象
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		panic(err)
 	}
 	//进行填充
-	plainText = Padding(plainText, block.BlockSize())
+	plainText = padding(plainText, block.BlockSize())
 	//指定初始向量vi,长度和block的块尺寸一致
 	//iv := []byte("12345678abcdefgh")
 	//指定分组模式，返回一个BlockMode接口对象
@@ -218,6 +198,6 @@ func AES_CBC_Decrypt(cipherText, key, iv []byte) []byte {
 	plainText := make([]byte, len(cipherText))
 	blockMode.CryptBlocks(plainText, cipherText)
 	//删除填充
-	plainText = UnPadding(plainText)
+	plainText = unPadding(plainText)
 	return plainText
 }

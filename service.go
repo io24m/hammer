@@ -46,6 +46,10 @@ func Login(query *Query) (string, error) {
 	if resp.StatusCode == 200 {
 
 	}
+	if strings.TrimSpace(string(res)) == "" {
+
+		return "no", nil
+	}
 	fmt.Println("login 请求成功：" + string(res))
 	return string(res), nil
 }
