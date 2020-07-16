@@ -21,6 +21,8 @@ func init() {
 type UserAgentType int
 
 const (
+	POST   string        = "POST"
+	GET    string        = "GET"
 	Mobile UserAgentType = iota
 	Pc
 )
@@ -42,7 +44,7 @@ var UserAgentDefault = []string{
 	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/13.10586",
 }
 
-func UserAgent(ua ...UserAgentType) (res string) {
+func agent(ua ...UserAgentType) (res string) {
 	var index int
 	l := len(UserAgentDefault)
 	if ua == nil || len(ua) == 0 {
@@ -65,7 +67,7 @@ func requestCloudMusicApi(method, url string, data map[string]interface{}, optio
 		return nil, err
 	}
 	header := req.Header
-	header.Add("User-Agent", UserAgent(options.Ua))
+	header.Add("User-Agent", agent(options.Ua))
 	if method == "POST" {
 		header.Add("Content-Type", "application/x-www-form-urlencoded")
 	}
@@ -103,22 +105,22 @@ func requestCloudMusicApi(method, url string, data map[string]interface{}, optio
 		url = "https://music.163.com/api/linux/forward"
 	} else if options.Crypto == "eapi" {
 		var dataHeader = http.Header{}
-		dataHeader.Add("osver", GetCookie(options.Cookies, "osver"))
-		dataHeader.Add("deviceId", GetCookie(options.Cookies, "deviceId"))
-		dataHeader.Add("appver", GetCookie(options.Cookies, "appver", "6.1.1"))
-		dataHeader.Add("versioncode", GetCookie(options.Cookies, "versioncode", "140"))
-		dataHeader.Add("mobilename", GetCookie(options.Cookies, "mobilename"))
-		dataHeader.Add("buildver", GetCookie(options.Cookies, "buildver"))
-		dataHeader.Add("resolution", GetCookie(options.Cookies, "resolution", "1920x1080"))
-		dataHeader.Add("__csrf", GetCookie(options.Cookies, "__csrf"))
-		dataHeader.Add("os", GetCookie(options.Cookies, "os", "android"))
-		dataHeader.Add("channel", GetCookie(options.Cookies, "channel"))
-		dataHeader.Add("channel", GetCookie(options.Cookies, "channel"))
+		dataHeader.Add("osver", getCookie(options.Cookies, "osver"))
+		dataHeader.Add("deviceId", getCookie(options.Cookies, "deviceId"))
+		dataHeader.Add("appver", getCookie(options.Cookies, "appver", "6.1.1"))
+		dataHeader.Add("versioncode", getCookie(options.Cookies, "versioncode", "140"))
+		dataHeader.Add("mobilename", getCookie(options.Cookies, "mobilename"))
+		dataHeader.Add("buildver", getCookie(options.Cookies, "buildver"))
+		dataHeader.Add("resolution", getCookie(options.Cookies, "resolution", "1920x1080"))
+		dataHeader.Add("__csrf", getCookie(options.Cookies, "__csrf"))
+		dataHeader.Add("os", getCookie(options.Cookies, "os", "android"))
+		dataHeader.Add("channel", getCookie(options.Cookies, "channel"))
+		dataHeader.Add("channel", getCookie(options.Cookies, "channel"))
 		dataHeader.Add("requestId", fmt.Sprintf("%d_%04d", time.Now().UnixNano()/1000000, r.Intn(1000)))
-		if c := GetCookie(options.Cookies, "MUSIC_U"); c != "" {
+		if c := getCookie(options.Cookies, "MUSIC_U"); c != "" {
 			dataHeader.Add("MUSIC_U", c)
 		}
-		if c := GetCookie(options.Cookies, "MUSIC_A"); c != "" {
+		if c := getCookie(options.Cookies, "MUSIC_A"); c != "" {
 			dataHeader.Add("MUSIC_A", c)
 		}
 		req.Header.Set("Cookie", "")
@@ -148,7 +150,7 @@ func requestCloudMusicApi(method, url string, data map[string]interface{}, optio
 	return resp, nil
 }
 
-func GetCookie(cookies []*http.Cookie, name string, defaultValue ...string) string {
+func getCookie(cookies []*http.Cookie, name string, defaultValue ...string) string {
 	for _, v := range cookies {
 		if v.Name == name {
 			return v.Value
@@ -158,4 +160,7 @@ func GetCookie(cookies []*http.Cookie, name string, defaultValue ...string) stri
 		return ""
 	}
 	return defaultValue[0]
+}
+func addCookie(cookie []*http.Cookie, name, value string) []*http.Cookie {
+	return append(cookie, &http.Cookie{Name: name, Value: value})
 }

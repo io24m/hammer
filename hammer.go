@@ -12,7 +12,7 @@ func Run() {
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	//fmt.Println(r.RemoteAddr, "连接成功")
-	f := url2func[r.URL.Path]
+	f := route[r.URL.Path]
 	if f == nil {
 		w.Write([]byte("启动服务成功"))
 		return
@@ -31,9 +31,11 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-var url2func map[string]func(*Query) (string, error)
+var route map[string]func(*Query) (string, error)
 
 func init() {
-	url2func = make(map[string]func(*Query) (string, error))
-	url2func["/login"] = Login
+	route = make(map[string]func(*Query) (string, error))
+	route["/login"] = Login
+	route["/login/cellphone"] = LoginCellphone
+	route["/playlist/detail"] = PlaylistDetail
 }

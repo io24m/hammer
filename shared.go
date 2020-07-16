@@ -21,8 +21,3 @@ type Options struct {
 	Token   string
 	Url     string
 }
-
-const (
-	POST  string = "POST"
-	LOGIN string = "https://music.163.com/weapi/login"
-)
