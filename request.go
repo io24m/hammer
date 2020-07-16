@@ -140,3 +140,16 @@ func requestCloudMusicApi(method, url string, data map[string]interface{}, optio
 	}
 	return resp, nil
 }
+
+func responseDefault(method, url string, data map[string]interface{}, options *Options) (string, error) {
+	w, err := requestCloudMusicApi(method, url, data, options)
+	if err != nil {
+		return "", err
+	}
+	defer w.Body.Close()
+	r, err := ioutil.ReadAll(w.Body)
+	if err != nil {
+		return "", err
+	}
+	return string(r), nil
+}

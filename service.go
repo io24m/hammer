@@ -121,11 +121,7 @@ func PlaylistDetail(query *Query) (string, error) {
 		Cookies: query.Cookies,
 		Proxy:   query.Proxy,
 	}
-	w, err := requestCloudMusicApi(post, urlPlaylistDetail, data, options)
-	if err != nil {
-		return "", err
-	}
-	return responseDefault(w)
+	return responseDefault(post, urlPlaylistDetail, data, options)
 
 }
 
@@ -145,11 +141,7 @@ func SongUrl(query *Query) (string, error) {
 		Cookies: query.Cookies,
 		Proxy:   query.Proxy,
 	}
-	w, err := requestCloudMusicApi(post, urlSongUrl, data, options)
-	if err != nil {
-		return "", err
-	}
-	return responseDefault(w)
+	return responseDefault(post, urlSongUrl, data, options)
 }
 
 func SongDetail(query *Query) (string, error) {
@@ -170,21 +162,5 @@ func SongDetail(query *Query) (string, error) {
 		Token:   "",
 		Url:     "",
 	}
-	w, err := requestCloudMusicApi(post, urlSongDetail, data, options)
-	if err != nil {
-		return "", err
-	}
-	return responseDefault(w)
-}
-
-func responseDefault(w *http.Response) (string, error) {
-	if w == nil {
-		return "", nil
-	}
-	defer w.Body.Close()
-	all, err := ioutil.ReadAll(w.Body)
-	if err != nil {
-		return "", err
-	}
-	return string(all), nil
+	return responseDefault(post, urlSongDetail, data, options)
 }
