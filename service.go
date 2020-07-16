@@ -121,16 +121,11 @@ func PlaylistDetail(query *Query) (string, error) {
 		Cookies: query.Cookies,
 		Proxy:   query.Proxy,
 	}
-	api, err := requestCloudMusicApi(post, urlPlaylistDetail, data, options)
+	w, err := requestCloudMusicApi(post, urlPlaylistDetail, data, options)
 	if err != nil {
 		return "", err
 	}
-	defer api.Body.Close()
-	all, err := ioutil.ReadAll(api.Body)
-	if err != nil {
-		return "", err
-	}
-	return string(all), nil
+	return analysisResponse(w)
 
 }
 
@@ -150,16 +145,11 @@ func SongUrl(query *Query) (string, error) {
 		Cookies: query.Cookies,
 		Proxy:   query.Proxy,
 	}
-	res, err := requestCloudMusicApi(post, urlSongUrl, data, options)
+	w, err := requestCloudMusicApi(post, urlSongUrl, data, options)
 	if err != nil {
 		return "", err
 	}
-	defer res.Body.Close()
-	all, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return "", err
-	}
-	return string(all), nil
+	return analysisResponse(w)
 }
 
 func SongDetail(query *Query) (string, error) {
@@ -180,16 +170,21 @@ func SongDetail(query *Query) (string, error) {
 		Token:   "",
 		Url:     "",
 	}
-	res, err := requestCloudMusicApi(post, urlSongDetail, data, options)
+	w, err := requestCloudMusicApi(post, urlSongDetail, data, options)
 	if err != nil {
 		return "", err
 	}
-	defer res.Body.Close()
-	all, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return "", err
-	}
+	return analysisResponse(w)
+}
 
+func analysisResponse(w *http.Response) (string, error) {
+	if w == nil {
+		return "", nil
+	}
+	defer w.Body.Close()
+	all, err := ioutil.ReadAll(w.Body)
+	if err != nil {
+		return "", err
+	}
 	return string(all), nil
-
 }
