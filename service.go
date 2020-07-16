@@ -125,7 +125,7 @@ func PlaylistDetail(query *Query) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return analysisResponse(w)
+	return responseDefault(w)
 
 }
 
@@ -149,7 +149,7 @@ func SongUrl(query *Query) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return analysisResponse(w)
+	return responseDefault(w)
 }
 
 func SongDetail(query *Query) (string, error) {
@@ -174,10 +174,10 @@ func SongDetail(query *Query) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return analysisResponse(w)
+	return responseDefault(w)
 }
 
-func analysisResponse(w *http.Response) (string, error) {
+func responseDefault(w *http.Response) (string, error) {
 	if w == nil {
 		return "", nil
 	}
