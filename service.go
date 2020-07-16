@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -50,8 +51,19 @@ func Login(query *Query) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	m := make(map[string]interface{}, 0)
+	json.Unmarshal(body, &m)
+	float := strconv.FormatFloat(m["code"].(float64), 'f', -1, 64)
+	if float == "502" {
+		return "账号或密码错误", nil
+	}
+	m["cookie"] = cmResult.Header.Get("Set-Cookie")
+	marshal, err := json.Marshal(m)
+	if err != nil {
+		return "", err
+	}
 	//code502	var msg = `{'msg':'账号或密码错误','code':'502','message':'账号或密码错误'}`
-	return string(body), nil
+	return string(marshal), nil
 }
 
 func LoginCellphone(query *Query) (string, error) {
@@ -87,7 +99,14 @@ func LoginCellphone(query *Query) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(body), nil
+	m := make(map[string]interface{}, 0)
+	json.Unmarshal(body, &m)
+	m["cookie"] = cmResult.Header.Get("Set-Cookie")
+	marshal, err := json.Marshal(m)
+	if err != nil {
+		return "", err
+	}
+	return string(marshal), nil
 }
 
 func PlaylistDetail(query *Query) (string, error) {
@@ -102,18 +121,17 @@ func PlaylistDetail(query *Query) (string, error) {
 	}
 	api, err := requestCloudMusicApi(POST, UrlPlaylistDetail, data, options)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 	defer api.Body.Close()
 	all, err := ioutil.ReadAll(api.Body)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
-	m := make(map[string]interface{}, 0)
-	json.Unmarshal(all, &m)
 	return string(all), nil
 
 }
+
 func SongUrl(query *Query) (string, error) {
 	if MUSIC_U := getCookie(query.Cookies, "MUSIC_U"); strings.TrimSpace(MUSIC_U) == "" {
 		query.Cookies = addCookie(query.Cookies, "_ntes_nuid", hex.EncodeToString(key(16)))
@@ -132,12 +150,12 @@ func SongUrl(query *Query) (string, error) {
 	}
 	res, err := requestCloudMusicApi(POST, UrlSongUrl, data, options)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 	defer res.Body.Close()
 	all, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 	return string(all), nil
 }
@@ -163,12 +181,12 @@ func SongDetail(query *Query) (string, error) {
 	}
 	res, err := requestCloudMusicApi(POST, UrlSongDetail, data, options)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 	defer res.Body.Close()
 	all, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 
 	return string(all), nil

@@ -67,10 +67,8 @@ func merSong(s1 map[string]*songDetails, s2 map[string]*songDetails) {
 }
 
 func getIds(cfg *Cfg) []string {
-	query := &Query{
-		Param: url.Values{},
-	}
-	query.Param.Add("id", cfg.PlayListId)
+	query := &Query{}
+	query.AddParam("id", cfg.PlayListId)
 	resp, err := PlaylistDetail(query)
 	if err != nil {
 		panic(err)

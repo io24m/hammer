@@ -13,6 +13,14 @@ type Query struct {
 	Proxy   interface{}
 }
 
+func (query *Query) AddParam(name, value string) *Query {
+	if query.Param == nil {
+		query.Param = url.Values{}
+	}
+	query.Param.Add(name, value)
+	return query
+}
+
 type Options struct {
 	Crypto  string
 	Cookies []*http.Cookie

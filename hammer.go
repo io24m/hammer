@@ -18,7 +18,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("启动服务成功"))
 		return
 	}
-
 	s, err := f(&Query{
 		Cookies: r.Cookies(),
 		Body:    r.Body,
@@ -39,8 +38,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write([]byte(s))
-
-	return
 }
 
 var route map[string]func(*Query) (string, error)
