@@ -136,7 +136,7 @@ func requestCloudMusicApi(method, url string, data map[string]interface{}, optio
 	u, _ := urlpkg.Parse(url)
 	req.URL = u
 	req.Host = u.Host
-	param := GetQueryParam(data)
+	param := queryParamString(data)
 	buf := new(bytes.Buffer)
 	buf.Write([]byte(param))
 	req.Body = ioutil.NopCloser(buf)

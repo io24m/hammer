@@ -18,13 +18,13 @@ func queryParam(data interface{}) (res []string) {
 			break
 		}
 		if vs, ok := v.(string); ok {
-			res = append(res, k+":"+url.PathEscape(vs))
+			res = append(res, k+"="+url.QueryEscape(vs))
 		}
 	}
 	return
 }
 
-func GetQueryParam(data interface{}) string {
+func queryParamString(data interface{}) string {
 	param := queryParam(data)
 	join := strings.Join(param, "&")
 	return join
