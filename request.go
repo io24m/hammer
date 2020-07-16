@@ -21,9 +21,10 @@ func init() {
 type UserAgentType int
 
 const (
-	POST   string        = "POST"
-	GET    string        = "GET"
-	Mobile UserAgentType = iota
+	POST string        = "POST"
+	GET  string        = "GET"
+	R    UserAgentType = iota
+	Mobile
 	Pc
 )
 
@@ -95,9 +96,9 @@ func requestCloudMusicApi(method, url string, data map[string]interface{}, optio
 		reg, _ = regexp.Compile(`\w*api`)
 		url = reg.ReplaceAllString(url, "weapi")
 	} else if options.Crypto == "linuxapi" {
-		reg, _ := regexp.Compile(`\w*api`)
 		m := make(map[string]interface{})
 		m["method"] = method
+		reg, _ := regexp.Compile(`\w*api`)
 		m["url"] = reg.ReplaceAllString(url, "api")
 		m["params"] = data
 		data = linuxapiEncrypt(m)

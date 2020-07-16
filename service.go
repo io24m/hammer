@@ -3,8 +3,10 @@ package hammer
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	"strings"
 )
 
@@ -12,6 +14,7 @@ const (
 	UrlLogin          string = "https://music.163.com/weapi/login"
 	UrlLoginCellphone string = "https://music.163.com/weapi/login/cellphone"
 	UrlPlaylistDetail string = "https://music.163.com/weapi/v3/playlist/detail"
+	UrlSongDetail     string = "https://music.163.com/weapi/v3/song/detail"
 )
 
 func Login(query *Query) (string, error) {
@@ -101,9 +104,42 @@ func PlaylistDetail(query *Query) (string, error) {
 	}
 	defer api.Body.Close()
 	all, err := ioutil.ReadAll(api.Body)
-	if err == nil {
+	if err != nil {
 		return "", nil
 	}
+	return string(all), nil
+
+}
+
+func SongDetail(query *Query) (string, error) {
+	ids := query.Param.Get("ids")
+	reg, _ := regexp.Compile(`\s*,\s*`)
+	idList := reg.Split(ids, -1)
+	c := make([]string, 0)
+	for _, v := range idList {
+		c = append(c, fmt.Sprintf(`{"id":%s}`, v))
+	}
+	data := make(map[string]interface{}, 0)
+	data["c"] = "[" + strings.Join(c, ",") + "]"
+	data["ids"] = "[" + strings.Join(idList, ",") + "]"
+	options := &Options{
+		Crypto:  "weapi",
+		Cookies: query.Cookies,
+		Proxy:   query.Proxy,
+		Ua:      0,
+		Token:   "",
+		Url:     "",
+	}
+	res, err := requestCloudMusicApi(POST, UrlSongDetail, data, options)
+	if err != nil {
+		return "", nil
+	}
+	defer res.Body.Close()
+	all, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return "", nil
+	}
+
 	return string(all), nil
 
 }

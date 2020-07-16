@@ -12,6 +12,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"math/big"
+	"strings"
 )
 
 const (
@@ -83,7 +84,7 @@ func linuxapiEncrypt(data interface{}) (res map[string]interface{}) {
 	res = make(map[string]interface{})
 	jsondata, _ := json.Marshal(data)
 	ecb := aesEncryptECB(jsondata, []byte(linuxapiKey))
-	res["eparams"] = hex.EncodeToString(ecb)
+	res["eparams"] = strings.ToUpper(hex.EncodeToString(ecb))
 	return
 }
 
