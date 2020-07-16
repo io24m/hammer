@@ -4,44 +4,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"strings"
-	"sync"
 )
 
 type Cfg struct {
-	Port string
-	Host string
+	Port            string
+	SavePath        string
+	PlayListId      string
+	ConcurrentCount int
 }
 
-var defaultConfig *Cfg
-
-var lock sync.Mutex
-
-func (me *Cfg) merCfg(other *Cfg) {
-	if other == nil {
-		return
-	}
-	if strings.TrimSpace(other.Port) != "" {
-		me.Port = other.Port
-	}
-	if strings.TrimSpace(other.Host) != "" {
-		me.Host = other.Host
-	}
+var defaultConfig = &Cfg{
+	Port:            "8849",
+	SavePath:        "\\",
+	ConcurrentCount: 10,
 }
 
 func Config(name ...string) (cfg *Cfg) {
-	if defaultConfig != nil {
-		return defaultConfig
-	}
-	lock.Lock()
-	if defaultConfig != nil {
-		return defaultConfig
-	}
-	defaultConfig = &Cfg{}
-	lock.Unlock()
 	cfg = defaultConfig
-	cfg.Host = ""
-	cfg.Port = "8849"
 	path := "config.json"
 	if name != nil && len(name) != 0 {
 		path = name[0]
@@ -51,12 +30,10 @@ func Config(name ...string) (cfg *Cfg) {
 		fmt.Println(err.Error())
 		return
 	}
-	other := &Cfg{}
-	err = json.Unmarshal(file, other)
+	err = json.Unmarshal(file, cfg)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-	cfg.merCfg(other)
 	return
 }

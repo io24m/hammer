@@ -3,6 +3,7 @@ package hammer
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -15,6 +16,7 @@ const (
 	UrlLoginCellphone string = "https://music.163.com/weapi/login/cellphone"
 	UrlPlaylistDetail string = "https://music.163.com/weapi/v3/playlist/detail"
 	UrlSongDetail     string = "https://music.163.com/weapi/v3/song/detail"
+	UrlSongUrl        string = "https://music.163.com/api/song/enhance/player/url"
 )
 
 func Login(query *Query) (string, error) {
@@ -107,8 +109,37 @@ func PlaylistDetail(query *Query) (string, error) {
 	if err != nil {
 		return "", nil
 	}
+	m := make(map[string]interface{}, 0)
+	json.Unmarshal(all, &m)
 	return string(all), nil
 
+}
+func SongUrl(query *Query) (string, error) {
+	if MUSIC_U := getCookie(query.Cookies, "MUSIC_U"); strings.TrimSpace(MUSIC_U) == "" {
+		query.Cookies = addCookie(query.Cookies, "_ntes_nuid", hex.EncodeToString(key(16)))
+	}
+	query.Cookies = addCookie(query.Cookies, "os", "pc")
+	data := make(map[string]interface{}, 0)
+	data["ids"] = "[" + query.Param.Get("id") + "]"
+	if br := query.Param.Get("br"); strings.TrimSpace(br) != "" {
+		data["br"] = br
+	}
+	data["br"] = 999000
+	options := &Options{
+		Crypto:  "linuxapi",
+		Cookies: query.Cookies,
+		Proxy:   query.Proxy,
+	}
+	res, err := requestCloudMusicApi(POST, UrlSongUrl, data, options)
+	if err != nil {
+		return "", nil
+	}
+	defer res.Body.Close()
+	all, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return "", nil
+	}
+	return string(all), nil
 }
 
 func SongDetail(query *Query) (string, error) {

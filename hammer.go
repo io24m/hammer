@@ -27,7 +27,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Access-Control-Allow-Credentials", "true")
 	origin := r.Header.Get("origin")
 	if strings.TrimSpace(origin) == "" {
-
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 	} else {
 		w.Header().Add("Access-Control-Allow-Origin", origin)
@@ -52,4 +51,5 @@ func init() {
 	route["/login/cellphone"] = LoginCellphone
 	route["/playlist/detail"] = PlaylistDetail
 	route["/song/detail"] = SongDetail
+	route["song/url"] = SongUrl
 }

@@ -1,3 +1,6 @@
 {
-  "port": "8849"
+  "port": "8849",
+  "savePath": "\\down\\NeteaseCloudMusic\\temp\\",
+  "playListId": "5038271622",
+  "concurrentCount": 9
 }
