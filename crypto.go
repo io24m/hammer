@@ -71,10 +71,10 @@ func weapiEncrypt(data interface{}) (res map[string]interface{}) {
 	secretKey := key(16)
 	rKey := reverseKey(secretKey)
 	encrypt := aesCbcEncrypt(jsonStr, []byte(presetKey), []byte(ivParameter))
-	b64 := base64.StdEncoding.EncodeToString(encrypt)
+	b64 := base64Encode(encrypt)
 	aes128Encrypt := aesCbcEncrypt([]byte(b64), secretKey, []byte(ivParameter))
-	b64 = base64.StdEncoding.EncodeToString(aes128Encrypt)
-	res["params"] = b64
+	b64 = base64Encode(aes128Encrypt)
+	res["params"] = string(b64)
 	res["encSecKey"] = rsaNoPaddingEncrypt(rKey, []byte(publicKey))
 	return
 }
@@ -195,13 +195,8 @@ func aesCbcDecrypt(cipherText, key, iv []byte) []byte {
 }
 
 func base64Encode(data []byte) (buf []byte) {
-
 	stdEncoding := base64.StdEncoding
-
-	toString := stdEncoding.EncodeToString(data)
-
-	//buf = make([]byte, stdEncoding.EncodedLen(len(data)))
-	//stdEncoding.Encode(buf, data)
-	buf = []byte(toString)
+	buf = make([]byte, stdEncoding.EncodedLen(len(data)))
+	stdEncoding.Encode(buf, data)
 	return
 }
