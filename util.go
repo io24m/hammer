@@ -1,6 +1,7 @@
 package hammer
 
 import (
+	"net/http"
 	"net/url"
 	"strings"
 )
@@ -28,4 +29,20 @@ func queryParamString(data interface{}) string {
 	param := queryParam(data)
 	join := strings.Join(param, "&")
 	return join
+}
+
+func getCookie(cookies []*http.Cookie, name string, defaultValue ...string) string {
+	for _, v := range cookies {
+		if v.Name == name {
+			return v.Value
+		}
+	}
+	if defaultValue == nil || len(defaultValue) == 0 {
+		return ""
+	}
+	return defaultValue[0]
+}
+
+func addCookie(cookie []*http.Cookie, name, value string) []*http.Cookie {
+	return append(cookie, &http.Cookie{Name: name, Value: value})
 }

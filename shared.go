@@ -6,6 +6,14 @@ import (
 	"net/url"
 )
 
+const (
+	rr UserAgentType = iota
+	mobile
+	pc
+)
+
+type UserAgentType int
+
 type Query struct {
 	Cookies []*http.Cookie
 	Param   url.Values

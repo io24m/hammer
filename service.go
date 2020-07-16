@@ -13,11 +13,13 @@ import (
 )
 
 const (
-	UrlLogin          string = "https://music.163.com/weapi/login"
-	UrlLoginCellphone string = "https://music.163.com/weapi/login/cellphone"
-	UrlPlaylistDetail string = "https://music.163.com/weapi/v3/playlist/detail"
-	UrlSongDetail     string = "https://music.163.com/weapi/v3/song/detail"
-	UrlSongUrl        string = "https://music.163.com/api/song/enhance/player/url"
+	post              string = "POST"
+	get               string = "GET"
+	urlLogin          string = "https://music.163.com/weapi/login"
+	urlLoginCellphone string = "https://music.163.com/weapi/login/cellphone"
+	urlPlaylistDetail string = "https://music.163.com/weapi/v3/playlist/detail"
+	urlSongDetail     string = "https://music.163.com/weapi/v3/song/detail"
+	urlSongUrl        string = "https://music.163.com/api/song/enhance/player/url"
 )
 
 func Login(query *Query) (string, error) {
@@ -38,11 +40,11 @@ func Login(query *Query) (string, error) {
 	})
 	var options = &Options{
 		Crypto:  "weapi",
-		Ua:      Pc,
+		Ua:      pc,
 		Cookies: query.Cookies,
 		Proxy:   query.Proxy,
 	}
-	cmResult, err := requestCloudMusicApi(POST, UrlLogin, data, options)
+	cmResult, err := requestCloudMusicApi(post, urlLogin, data, options)
 	if err != nil {
 		return "", err
 	}
@@ -88,9 +90,9 @@ func LoginCellphone(query *Query) (string, error) {
 		Crypto:  "weapi",
 		Cookies: query.Cookies,
 		Proxy:   nil,
-		Ua:      Pc,
+		Ua:      pc,
 	}
-	cmResult, err := requestCloudMusicApi(POST, UrlLoginCellphone, data, options)
+	cmResult, err := requestCloudMusicApi(post, urlLoginCellphone, data, options)
 	if err != nil {
 		return "", err
 	}
@@ -119,7 +121,7 @@ func PlaylistDetail(query *Query) (string, error) {
 		Cookies: query.Cookies,
 		Proxy:   query.Proxy,
 	}
-	api, err := requestCloudMusicApi(POST, UrlPlaylistDetail, data, options)
+	api, err := requestCloudMusicApi(post, urlPlaylistDetail, data, options)
 	if err != nil {
 		return "", err
 	}
@@ -148,7 +150,7 @@ func SongUrl(query *Query) (string, error) {
 		Cookies: query.Cookies,
 		Proxy:   query.Proxy,
 	}
-	res, err := requestCloudMusicApi(POST, UrlSongUrl, data, options)
+	res, err := requestCloudMusicApi(post, urlSongUrl, data, options)
 	if err != nil {
 		return "", err
 	}
@@ -179,7 +181,7 @@ func SongDetail(query *Query) (string, error) {
 		Token:   "",
 		Url:     "",
 	}
-	res, err := requestCloudMusicApi(POST, UrlSongDetail, data, options)
+	res, err := requestCloudMusicApi(post, urlSongDetail, data, options)
 	if err != nil {
 		return "", err
 	}

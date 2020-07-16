@@ -18,17 +18,7 @@ func init() {
 	r = rand.New(rand.NewSource(time.Now().Unix()))
 }
 
-type UserAgentType int
-
-const (
-	POST string        = "POST"
-	GET  string        = "GET"
-	R    UserAgentType = iota
-	Mobile
-	Pc
-)
-
-var UserAgentDefault = []string{
+var userAgentDefault = []string{
 	"Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1",
 	"Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1",
 	"Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Mobile Safari/537.36",
@@ -47,17 +37,17 @@ var UserAgentDefault = []string{
 
 func agent(ua ...UserAgentType) (res string) {
 	var index int
-	l := len(UserAgentDefault)
+	l := len(userAgentDefault)
 	if ua == nil || len(ua) == 0 {
 		index = r.Intn(l - 1)
-	} else if ua[0] == Mobile {
+	} else if ua[0] == mobile {
 		index = r.Intn(6)
-	} else if ua[0] == Pc {
+	} else if ua[0] == pc {
 		index = r.Intn(5) + 8
 	} else {
 		index = r.Intn(l - 1)
 	}
-	res = UserAgentDefault[index]
+	res = userAgentDefault[index]
 	return
 }
 
@@ -149,19 +139,4 @@ func requestCloudMusicApi(method, url string, data map[string]interface{}, optio
 		return nil, err
 	}
 	return resp, nil
-}
-
-func getCookie(cookies []*http.Cookie, name string, defaultValue ...string) string {
-	for _, v := range cookies {
-		if v.Name == name {
-			return v.Value
-		}
-	}
-	if defaultValue == nil || len(defaultValue) == 0 {
-		return ""
-	}
-	return defaultValue[0]
-}
-func addCookie(cookie []*http.Cookie, name, value string) []*http.Cookie {
-	return append(cookie, &http.Cookie{Name: name, Value: value})
 }
