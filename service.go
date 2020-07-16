@@ -177,7 +177,6 @@ func SongDetail(query *Query) (string, error) {
 		Crypto:  "weapi",
 		Cookies: query.Cookies,
 		Proxy:   query.Proxy,
-		Ua:      0,
 		Token:   "",
 		Url:     "",
 	}

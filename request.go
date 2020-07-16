@@ -35,7 +35,7 @@ var userAgentDefault = []string{
 	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/13.10586",
 }
 
-func agent(ua ...UserAgentType) (res string) {
+func agent(ua ...userAgentType) (res string) {
 	var index int
 	l := len(userAgentDefault)
 	if ua == nil || len(ua) == 0 {

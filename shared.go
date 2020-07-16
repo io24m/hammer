@@ -7,12 +7,11 @@ import (
 )
 
 const (
-	rr UserAgentType = iota
-	mobile
-	pc
+	mobile userAgentType = "mobile"
+	pc     userAgentType = "pc"
 )
 
-type UserAgentType int
+type userAgentType string
 
 type Query struct {
 	Cookies []*http.Cookie
@@ -33,7 +32,7 @@ type Options struct {
 	Crypto  string
 	Cookies []*http.Cookie
 	Proxy   interface{}
-	Ua      UserAgentType
+	Ua      userAgentType
 	Token   string
 	Url     string
 }
