@@ -122,7 +122,6 @@ func PlaylistDetail(query *Query) (string, error) {
 		Proxy:   query.Proxy,
 	}
 	return responseDefault(post, urlPlaylistDetail, data, options)
-
 }
 
 func SongUrl(query *Query) (string, error) {
@@ -159,8 +158,6 @@ func SongDetail(query *Query) (string, error) {
 		Crypto:  "weapi",
 		Cookies: query.Cookies,
 		Proxy:   query.Proxy,
-		Token:   "",
-		Url:     "",
 	}
 	return responseDefault(post, urlSongDetail, data, options)
 }

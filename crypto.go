@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/md5"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
@@ -89,10 +90,26 @@ func linuxapiEncrypt(data interface{}) (res map[string]interface{}) {
 }
 
 func eapiEncrypt(url string, data interface{}) (res map[string]interface{}) {
+	text := ""
+	s, ok := data.(string)
+	if ok {
+		text = s
+	} else {
+		jsonData, _ := json.Marshal(data)
+		text = string(jsonData)
+	}
+	message := fmt.Sprintf("nobody%suse%smd5forencrypt", url, text)
+	sum := md5.Sum([]byte(message))
+	digest := hex.EncodeToString(sum[:])
+	pa := fmt.Sprintf("%s-36cd479b6b5-%s-36cd479b6b5-%s", url, text, digest)
+	res = make(map[string]interface{})
+	ecb := aesEncryptECB([]byte(pa), []byte(linuxapiKey))
+	res["params"] = strings.ToUpper(hex.EncodeToString(ecb))
 	return
 }
 
 func decrypt(data interface{}) interface{} {
+	//aesDecryptECB()
 	return nil
 }
 
