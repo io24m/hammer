@@ -12,7 +12,6 @@ func Run() {
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	//fmt.Println(r.RemoteAddr, "连接成功")
 	f := route[r.URL.Path]
 	if f == nil {
 		w.Write([]byte("启动服务成功"))
