@@ -1,5 +1,5 @@
-hammer
-====
+# hammer
+
 提供 NeteaseCloudMusicApi **网易云音乐** Golang API 服务接口，提供直接调用方式  
 
 [接口加密算法参考00](https://github.com/darknessomi/musicbox/wiki)  
