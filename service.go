@@ -13,13 +13,14 @@ import (
 )
 
 const (
-	post              string = "POST"
-	get               string = "GET"
-	urlLogin          string = "https://music.163.com/weapi/login"
-	urlLoginCellphone string = "https://music.163.com/weapi/login/cellphone"
-	urlPlaylistDetail string = "https://music.163.com/weapi/v3/playlist/detail"
-	urlSongDetail     string = "https://music.163.com/weapi/v3/song/detail"
-	urlSongUrl        string = "https://music.163.com/api/song/enhance/player/url"
+	post                   string = "POST"
+	get                    string = "GET"
+	urlLogin               string = "https://music.163.com/weapi/login"
+	urlLoginCellphone      string = "https://music.163.com/weapi/login/cellphone"
+	urlPlaylistDetail      string = "https://music.163.com/weapi/v3/playlist/detail"
+	urlSongDetail          string = "https://music.163.com/weapi/v3/song/detail"
+	urlSongUrl             string = "https://music.163.com/api/song/enhance/player/url"
+	urlActivateInitProfile string = "http://music.163.com/eapi/activate/initProfile"
 )
 
 func Login(query *Query) (string, error) {
@@ -39,7 +40,7 @@ func Login(query *Query) (string, error) {
 		Value: "pc",
 	})
 	var options = &Options{
-		Crypto:  "weapi",
+		Crypto:  weapi,
 		Ua:      pc,
 		Cookies: query.Cookies,
 		Proxy:   query.Proxy,
@@ -87,7 +88,7 @@ func LoginCellphone(query *Query) (string, error) {
 		Value: "pc",
 	})
 	options := &Options{
-		Crypto:  "weapi",
+		Crypto:  weapi,
 		Cookies: query.Cookies,
 		Proxy:   nil,
 		Ua:      pc,
@@ -117,7 +118,7 @@ func PlaylistDetail(query *Query) (string, error) {
 	data["n"] = 100000
 	data["s"] = 8
 	options := &Options{
-		Crypto:  "linuxapi",
+		Crypto:  linuxapi,
 		Cookies: query.Cookies,
 		Proxy:   query.Proxy,
 	}
@@ -136,7 +137,7 @@ func SongUrl(query *Query) (string, error) {
 	}
 	data["br"] = 999000
 	options := &Options{
-		Crypto:  "linuxapi",
+		Crypto:  linuxapi,
 		Cookies: query.Cookies,
 		Proxy:   query.Proxy,
 	}
@@ -151,13 +152,24 @@ func SongDetail(query *Query) (string, error) {
 	for _, v := range idList {
 		c = append(c, fmt.Sprintf(`{"id":%s}`, v))
 	}
-	data := make(map[string]interface{}, 0)
+	data := make(map[string]interface{})
 	data["c"] = "[" + strings.Join(c, ",") + "]"
 	data["ids"] = "[" + strings.Join(idList, ",") + "]"
 	options := &Options{
-		Crypto:  "weapi",
+		Crypto:  weapi,
 		Cookies: query.Cookies,
 		Proxy:   query.Proxy,
 	}
 	return responseDefault(post, urlSongDetail, data, options)
+}
+
+func ActivateInitProfile(query *Query) (string, error) {
+	data := make(map[string]interface{})
+	data["nickname"] = query.Param.Get("nickname")
+	options := &Options{
+		Crypto:  eapi,
+		Cookies: query.Cookies,
+		Url:     "/api/activate/initProfile",
+	}
+	return responseDefault(post, urlActivateInitProfile, data, options)
 }

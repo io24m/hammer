@@ -48,5 +48,6 @@ func init() {
 	route["/login/cellphone"] = LoginCellphone
 	route["/playlist/detail"] = PlaylistDetail
 	route["/song/detail"] = SongDetail
-	route["song/url"] = SongUrl
+	route["/song/url"] = SongUrl
+	route["/activate/init/profile"] = ActivateInitProfile
 }

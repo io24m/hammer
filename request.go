@@ -71,7 +71,7 @@ func requestCloudMusicApi(method, url string, data map[string]interface{}, optio
 	if header.Get("Cookie") == "" {
 		header.Set("Cookie", options.Token)
 	}
-	if options.Crypto == "weapi" {
+	if options.Crypto == weapi {
 		var csrf_token string
 		reg, _ := regexp.Compile(`_csrf=([^(;|$)]+)`)
 		for _, v := range req.Cookies() {
@@ -85,7 +85,7 @@ func requestCloudMusicApi(method, url string, data map[string]interface{}, optio
 		data = weapiEncrypt(data)
 		reg, _ = regexp.Compile(`\w*api`)
 		url = reg.ReplaceAllString(url, "weapi")
-	} else if options.Crypto == "linuxapi" {
+	} else if options.Crypto == linuxapi {
 		m := make(map[string]interface{})
 		m["method"] = method
 		reg, _ := regexp.Compile(`\w*api`)
@@ -94,7 +94,7 @@ func requestCloudMusicApi(method, url string, data map[string]interface{}, optio
 		data = linuxapiEncrypt(m)
 		header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36")
 		url = "https://music.163.com/api/linux/forward"
-	} else if options.Crypto == "eapi" {
+	} else if options.Crypto == eapi {
 		var dataHeader = http.Header{}
 		dataHeader.Add("osver", getCookie(options.Cookies, "osver"))
 		dataHeader.Add("deviceId", getCookie(options.Cookies, "deviceId"))
