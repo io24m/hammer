@@ -62,6 +62,7 @@ func initRoute() {
 		AlbumSublist,
 		ArtistAlbum,
 		ArtistDesc,
+		ArtistList,
 	}
 	route = funcNames(f)
 }

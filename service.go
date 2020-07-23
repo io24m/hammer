@@ -27,6 +27,7 @@ const (
 	urlAlbumSublist        string = "https://music.163.com/weapi/album/sublist"
 	urlArtistAlbum         string = "https://music.163.com/weapi/artist/albums/%s"
 	urlArtistDesc          string = "https://music.163.com/weapi/artist/introduction"
+	urlArtistList          string = "https://music.163.com/api/v1/artist/list"
 )
 
 //Login 邮箱登录
@@ -135,10 +136,7 @@ func SongUrl(query *Query) (string, error) {
 	query.AddCookie("os", "pc")
 	data := make(map[string]interface{}, 0)
 	data["ids"] = "[" + query.GetParam("id") + "]"
-	if br := query.GetParam("br"); strings.TrimSpace(br) != "" {
-		data["br"] = br
-	}
-	data["br"] = 999000
+	data["br"] = query.GetParamOrDefault("br", 999000)
 	opt := &options{
 		crypto:  linuxapi,
 		cookies: query.Cookies,
@@ -226,16 +224,8 @@ func AlbumSub(query *Query) (string, error) {
 func AlbumSublist(query *Query) (string, error) {
 	data := make(map[string]interface{})
 	data["total"] = true
-	if limit := query.GetParam("limit"); limit != "" {
-		data["limit"] = limit
-	} else {
-		data["limit"] = 25
-	}
-	if offset := query.GetParam("offset"); offset != "" {
-		data["offset"] = offset
-	} else {
-		data["offset"] = 0
-	}
+	data["limit"] = query.GetParamOrDefault("limit", 25)
+	data["offset"] = query.GetParamOrDefault("offset", 0)
 	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
 	return responseDefault(post, urlAlbumSublist, data, opt)
 }
@@ -244,16 +234,8 @@ func AlbumSublist(query *Query) (string, error) {
 func ArtistAlbum(query *Query) (string, error) {
 	data := make(map[string]interface{})
 	data["total"] = true
-	if limit := query.GetParam("limit"); limit != "" {
-		data["limit"] = limit
-	} else {
-		data["limit"] = 30
-	}
-	if offset := query.GetParam("offset"); offset != "" {
-		data["offset"] = offset
-	} else {
-		data["offset"] = 0
-	}
+	data["limit"] = query.GetParamOrDefault("limit", 30)
+	data["offset"] = query.GetParamOrDefault("offset", 0)
 	id := query.GetParam("id")
 	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
 	return responseDefault(post, fmt.Sprintf(urlArtistAlbum, id), data, opt)
@@ -265,4 +247,17 @@ func ArtistDesc(query *Query) (string, error) {
 	data["id"] = query.GetParam("id")
 	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
 	return responseDefault(post, urlArtistDesc, data, opt)
+}
+
+//ArtistList 歌手分类
+func ArtistList(query *Query) (string, error) {
+	data := make(map[string]interface{})
+	data["initial"] = query.GetParam("initial")
+	data["offset"] = query.GetParamOrDefault("offset", 0)
+	data["limit"] = query.GetParamOrDefault("limit", 30)
+	data["total"] = true
+	data["type"] = query.GetParamOrDefault("type", "1")
+	data["area"] = query.GetParam("area")
+	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
+	return responseDefault(post, urlArtistList, data, opt)
 }

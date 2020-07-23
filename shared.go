@@ -40,6 +40,20 @@ func (query *Query) GetParam(name string) string {
 	return query.Param.Get(name)
 }
 
+func (query *Query) GetParamOrDefault(name string, defaultValue ...interface{}) interface{} {
+	var dv interface{}
+	if defaultValue != nil && len(defaultValue) > 0 {
+		dv = defaultValue[0]
+	}
+	if query.Param == nil {
+		return dv
+	}
+	if p := query.Param.Get(name); p != "" {
+		return p
+	}
+	return dv
+}
+
 func (query *Query) AddCookie(name, value string) *Query {
 	if query.Cookies == nil {
 		query.Cookies = make([]*http.Cookie, 0)
