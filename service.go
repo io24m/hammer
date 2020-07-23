@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
@@ -22,8 +21,15 @@ const (
 	urlSongUrl             string = "https://music.163.com/api/song/enhance/player/url"
 	urlActivateInitProfile string = "http://music.163.com/eapi/activate/initProfile"
 	urlAlbum               string = "https://music.163.com/weapi/v1/album/%s"
+	urlAlbumDetailDynamic  string = "https://music.163.com/api/album/detail/dynamic"
+	urlAlbumNewest         string = "https://music.163.com/api/discovery/newAlbum"
+	urlAlbumSub            string = "https://music.163.com/api/album/%s"
+	urlAlbumSublist        string = "https://music.163.com/weapi/album/sublist"
+	urlArtistAlbum         string = "https://music.163.com/weapi/artist/albums/%s"
+	urlArtistDesc          string = "https://music.163.com/weapi/artist/introduction"
 )
 
+//Login 邮箱登录
 func Login(query *Query) (string, error) {
 	var data = make(map[string]interface{})
 	data["username"] = query.GetParam("email")
@@ -35,18 +41,14 @@ func Login(query *Query) (string, error) {
 		sum := md5.Sum([]byte(pw))
 		data["password"] = hex.EncodeToString(sum[:])
 	}
-
-	query.Cookies = append(query.Cookies, &http.Cookie{
-		Name:  "os",
-		Value: "pc",
-	})
-	var options = &options{
+	query.AddCookie("os", "pc")
+	var opt = &options{
 		crypto:  weapi,
 		ua:      pc,
 		cookies: query.Cookies,
 		proxy:   query.Proxy,
 	}
-	cmResult, err := requestCloudMusicApi(post, urlLogin, data, options)
+	cmResult, err := requestCloudMusicApi(post, urlLogin, data, opt)
 	if err != nil {
 		return "", err
 	}
@@ -70,6 +72,7 @@ func Login(query *Query) (string, error) {
 	return string(marshal), nil
 }
 
+//LoginCellphone 电话登录
 func LoginCellphone(query *Query) (string, error) {
 	data := make(map[string]interface{}, 0)
 	data["phone"] = query.GetParam("phone")
@@ -84,17 +87,14 @@ func LoginCellphone(query *Query) (string, error) {
 		sum := md5.Sum([]byte(pw))
 		data["password"] = hex.EncodeToString(sum[:])
 	}
-	query.Cookies = append(query.Cookies, &http.Cookie{
-		Name:  "os",
-		Value: "pc",
-	})
-	options := &options{
+	query.AddCookie("os", "pc")
+	opt := &options{
 		crypto:  weapi,
 		cookies: query.Cookies,
 		proxy:   nil,
 		ua:      pc,
 	}
-	cmResult, err := requestCloudMusicApi(post, urlLoginCellphone, data, options)
+	cmResult, err := requestCloudMusicApi(post, urlLoginCellphone, data, opt)
 	if err != nil {
 		return "", err
 	}
@@ -113,38 +113,41 @@ func LoginCellphone(query *Query) (string, error) {
 	return string(marshal), nil
 }
 
+//PlaylistDetail 歌单详情
 func PlaylistDetail(query *Query) (string, error) {
 	data := make(map[string]interface{}, 0)
 	data["id"] = query.GetParam("id")
 	data["n"] = 100000
 	data["s"] = 8
-	options := &options{
+	opt := &options{
 		crypto:  linuxapi,
 		cookies: query.Cookies,
 		proxy:   query.Proxy,
 	}
-	return responseDefault(post, urlPlaylistDetail, data, options)
+	return responseDefault(post, urlPlaylistDetail, data, opt)
 }
 
+//SongUrl 歌曲链接
 func SongUrl(query *Query) (string, error) {
-	if MUSIC_U := getCookie(query.Cookies, "MUSIC_U"); strings.TrimSpace(MUSIC_U) == "" {
-		query.Cookies = addCookie(query.Cookies, "_ntes_nuid", hex.EncodeToString(key(16)))
+	if MUSIC_U := query.GetCookie("MUSIC_U"); strings.TrimSpace(MUSIC_U) == "" {
+		query.AddCookie("_ntes_nuid", hex.EncodeToString(key(16)))
 	}
-	query.Cookies = addCookie(query.Cookies, "os", "pc")
+	query.AddCookie("os", "pc")
 	data := make(map[string]interface{}, 0)
 	data["ids"] = "[" + query.GetParam("id") + "]"
 	if br := query.GetParam("br"); strings.TrimSpace(br) != "" {
 		data["br"] = br
 	}
 	data["br"] = 999000
-	options := &options{
+	opt := &options{
 		crypto:  linuxapi,
 		cookies: query.Cookies,
 		proxy:   query.Proxy,
 	}
-	return responseDefault(post, urlSongUrl, data, options)
+	return responseDefault(post, urlSongUrl, data, opt)
 }
 
+//SongDetail 歌曲详情
 func SongDetail(query *Query) (string, error) {
 	ids := query.GetParam("ids")
 	reg, _ := regexp.Compile(`\s*,\s*`)
@@ -156,31 +159,110 @@ func SongDetail(query *Query) (string, error) {
 	data := make(map[string]interface{})
 	data["c"] = "[" + strings.Join(c, ",") + "]"
 	data["ids"] = "[" + strings.Join(idList, ",") + "]"
-	options := &options{
+	opt := &options{
 		crypto:  weapi,
 		cookies: query.Cookies,
 		proxy:   query.Proxy,
 	}
-	return responseDefault(post, urlSongDetail, data, options)
+	return responseDefault(post, urlSongDetail, data, opt)
 }
 
+//ActivateInitProfile 初始化名字
 func ActivateInitProfile(query *Query) (string, error) {
 	data := make(map[string]interface{})
 	data["nickname"] = query.GetParam("nickname")
-	options := &options{
+	opt := &options{
 		crypto:  eapi,
 		cookies: query.Cookies,
 		url:     "/api/activate/initProfile",
 	}
-	return responseDefault(post, urlActivateInitProfile, data, options)
+	return responseDefault(post, urlActivateInitProfile, data, opt)
 }
 
+//Album 专辑内容
 func Album(query *Query) (string, error) {
 	id := query.GetParam("id")
-	options := &options{
+	opt := &options{
 		crypto:  weapi,
 		cookies: query.Cookies,
 		proxy:   query.Proxy,
 	}
-	return responseDefault(post, fmt.Sprintf(urlAlbum, id), nil, options)
+	return responseDefault(post, fmt.Sprintf(urlAlbum, id), nil, opt)
+}
+
+//AlbumDetailDynamic 专辑动态信息
+func AlbumDetailDynamic(query *Query) (string, error) {
+	data := make(map[string]interface{})
+	data["id"] = query.GetParam("id")
+	opt := &options{
+		crypto:  weapi,
+		cookies: query.Cookies,
+		proxy:   query.Proxy,
+	}
+	return responseDefault(post, urlAlbumDetailDynamic, data, opt)
+}
+
+//AlbumNewest 最新专辑
+func AlbumNewest(query *Query) (string, error) {
+	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
+	return responseDefault(post, urlAlbumNewest, nil, opt)
+}
+
+//AlbumSub 收藏/取消收藏专辑
+func AlbumSub(query *Query) (string, error) {
+	data := make(map[string]interface{})
+	t := query.GetParam("t")
+	data["id"] = query.GetParam("id")
+	if t == "1" {
+		t = "sub"
+	} else {
+		t = "unsub"
+	}
+	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
+	return responseDefault(post, fmt.Sprintf(urlAlbumSub, t), data, opt)
+}
+
+//AlbumSublist 已收藏专辑列表
+func AlbumSublist(query *Query) (string, error) {
+	data := make(map[string]interface{})
+	data["total"] = true
+	if limit := query.GetParam("limit"); limit != "" {
+		data["limit"] = limit
+	} else {
+		data["limit"] = 25
+	}
+	if offset := query.GetParam("offset"); offset != "" {
+		data["offset"] = offset
+	} else {
+		data["offset"] = 0
+	}
+	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
+	return responseDefault(post, urlAlbumSublist, data, opt)
+}
+
+//ArtistAlbum 歌手专辑列表
+func ArtistAlbum(query *Query) (string, error) {
+	data := make(map[string]interface{})
+	data["total"] = true
+	if limit := query.GetParam("limit"); limit != "" {
+		data["limit"] = limit
+	} else {
+		data["limit"] = 30
+	}
+	if offset := query.GetParam("offset"); offset != "" {
+		data["offset"] = offset
+	} else {
+		data["offset"] = 0
+	}
+	id := query.GetParam("id")
+	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
+	return responseDefault(post, fmt.Sprintf(urlArtistAlbum, id), data, opt)
+}
+
+//ArtistDesc 歌手介绍
+func ArtistDesc(query *Query) (string, error) {
+	data := make(map[string]interface{})
+	data["id"] = query.GetParam("id")
+	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
+	return responseDefault(post, urlArtistDesc, data, opt)
 }

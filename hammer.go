@@ -56,6 +56,12 @@ func initRoute() {
 		SongUrl,
 		ActivateInitProfile,
 		Album,
+		AlbumDetailDynamic,
+		AlbumNewest,
+		AlbumSub,
+		AlbumSublist,
+		ArtistAlbum,
+		ArtistDesc,
 	}
 	route = funcNames(f)
 }

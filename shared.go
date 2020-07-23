@@ -51,6 +51,13 @@ func (query *Query) AddCookie(name, value string) *Query {
 	return query
 }
 
+func (query *Query) GetCookie(name string) string {
+	if query.Cookies == nil {
+		return ""
+	}
+	return getCookie(query.Cookies, name)
+}
+
 type options struct {
 	crypto  cryptoType
 	cookies []*http.Cookie
