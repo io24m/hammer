@@ -40,11 +40,11 @@ func Login(query *Query) (string, error) {
 		Name:  "os",
 		Value: "pc",
 	})
-	var options = &Options{
-		Crypto:  weapi,
-		Ua:      pc,
-		Cookies: query.Cookies,
-		Proxy:   query.Proxy,
+	var options = &options{
+		crypto:  weapi,
+		ua:      pc,
+		cookies: query.Cookies,
+		proxy:   query.Proxy,
 	}
 	cmResult, err := requestCloudMusicApi(post, urlLogin, data, options)
 	if err != nil {
@@ -88,11 +88,11 @@ func LoginCellphone(query *Query) (string, error) {
 		Name:  "os",
 		Value: "pc",
 	})
-	options := &Options{
-		Crypto:  weapi,
-		Cookies: query.Cookies,
-		Proxy:   nil,
-		Ua:      pc,
+	options := &options{
+		crypto:  weapi,
+		cookies: query.Cookies,
+		proxy:   nil,
+		ua:      pc,
 	}
 	cmResult, err := requestCloudMusicApi(post, urlLoginCellphone, data, options)
 	if err != nil {
@@ -118,10 +118,10 @@ func PlaylistDetail(query *Query) (string, error) {
 	data["id"] = query.GetParam("id")
 	data["n"] = 100000
 	data["s"] = 8
-	options := &Options{
-		Crypto:  linuxapi,
-		Cookies: query.Cookies,
-		Proxy:   query.Proxy,
+	options := &options{
+		crypto:  linuxapi,
+		cookies: query.Cookies,
+		proxy:   query.Proxy,
 	}
 	return responseDefault(post, urlPlaylistDetail, data, options)
 }
@@ -137,10 +137,10 @@ func SongUrl(query *Query) (string, error) {
 		data["br"] = br
 	}
 	data["br"] = 999000
-	options := &Options{
-		Crypto:  linuxapi,
-		Cookies: query.Cookies,
-		Proxy:   query.Proxy,
+	options := &options{
+		crypto:  linuxapi,
+		cookies: query.Cookies,
+		proxy:   query.Proxy,
 	}
 	return responseDefault(post, urlSongUrl, data, options)
 }
@@ -156,10 +156,10 @@ func SongDetail(query *Query) (string, error) {
 	data := make(map[string]interface{})
 	data["c"] = "[" + strings.Join(c, ",") + "]"
 	data["ids"] = "[" + strings.Join(idList, ",") + "]"
-	options := &Options{
-		Crypto:  weapi,
-		Cookies: query.Cookies,
-		Proxy:   query.Proxy,
+	options := &options{
+		crypto:  weapi,
+		cookies: query.Cookies,
+		proxy:   query.Proxy,
 	}
 	return responseDefault(post, urlSongDetail, data, options)
 }
@@ -167,20 +167,20 @@ func SongDetail(query *Query) (string, error) {
 func ActivateInitProfile(query *Query) (string, error) {
 	data := make(map[string]interface{})
 	data["nickname"] = query.GetParam("nickname")
-	options := &Options{
-		Crypto:  eapi,
-		Cookies: query.Cookies,
-		Url:     "/api/activate/initProfile",
+	options := &options{
+		crypto:  eapi,
+		cookies: query.Cookies,
+		url:     "/api/activate/initProfile",
 	}
 	return responseDefault(post, urlActivateInitProfile, data, options)
 }
 
 func Album(query *Query) (string, error) {
 	id := query.GetParam("id")
-	options := &Options{
-		Crypto:  weapi,
-		Cookies: query.Cookies,
-		Proxy:   query.Proxy,
+	options := &options{
+		crypto:  weapi,
+		cookies: query.Cookies,
+		proxy:   query.Proxy,
 	}
 	return responseDefault(post, fmt.Sprintf(urlAlbum, id), nil, options)
 }

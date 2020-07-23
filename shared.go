@@ -51,11 +51,11 @@ func (query *Query) AddCookie(name, value string) *Query {
 	return query
 }
 
-type Options struct {
-	Crypto  cryptoType
-	Cookies []*http.Cookie
-	Proxy   interface{}
-	Ua      userAgentType
-	Token   string
-	Url     string
+type options struct {
+	crypto  cryptoType
+	cookies []*http.Cookie
+	proxy   interface{}
+	ua      userAgentType
+	token   string
+	url     string
 }

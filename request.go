@@ -51,7 +51,7 @@ func agent(ua ...userAgentType) (res string) {
 	return
 }
 
-func requestCloudMusicApi(method, url string, data map[string]interface{}, options *Options) (*http.Response, error) {
+func requestCloudMusicApi(method, url string, data map[string]interface{}, options *options) (*http.Response, error) {
 	if data == nil {
 		data = make(map[string]interface{})
 	}
@@ -61,20 +61,20 @@ func requestCloudMusicApi(method, url string, data map[string]interface{}, optio
 		return nil, err
 	}
 	header := req.Header
-	header.Add("User-Agent", agent(options.Ua))
+	header.Add("User-Agent", agent(options.ua))
 	if method == "POST" {
 		header.Add("Content-Type", "application/x-www-form-urlencoded")
 	}
 	if strings.Contains(url, "music.163.com") {
 		header.Add("Referer", "https://music.163.com")
 	}
-	for _, v := range options.Cookies {
+	for _, v := range options.cookies {
 		req.AddCookie(v)
 	}
 	if header.Get("Cookie") == "" {
-		header.Set("Cookie", options.Token)
+		header.Set("Cookie", options.token)
 	}
-	if options.Crypto == weapi {
+	if options.crypto == weapi {
 		var csrf_token string
 		reg, _ := regexp.Compile(`_csrf=([^(;|$)]+)`)
 		for _, v := range req.Cookies() {
@@ -88,7 +88,7 @@ func requestCloudMusicApi(method, url string, data map[string]interface{}, optio
 		data = weapiEncrypt(data)
 		reg, _ = regexp.Compile(`\w*api`)
 		url = reg.ReplaceAllString(url, "weapi")
-	} else if options.Crypto == linuxapi {
+	} else if options.crypto == linuxapi {
 		m := make(map[string]interface{})
 		m["method"] = method
 		reg, _ := regexp.Compile(`\w*api`)
@@ -97,24 +97,24 @@ func requestCloudMusicApi(method, url string, data map[string]interface{}, optio
 		data = linuxapiEncrypt(m)
 		header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36")
 		url = "https://music.163.com/api/linux/forward"
-	} else if options.Crypto == eapi {
+	} else if options.crypto == eapi {
 		var dataHeader = http.Header{}
-		dataHeader.Add("osver", getCookie(options.Cookies, "osver"))
-		dataHeader.Add("deviceId", getCookie(options.Cookies, "deviceId"))
-		dataHeader.Add("appver", getCookie(options.Cookies, "appver", "6.1.1"))
-		dataHeader.Add("versioncode", getCookie(options.Cookies, "versioncode", "140"))
-		dataHeader.Add("mobilename", getCookie(options.Cookies, "mobilename"))
-		dataHeader.Add("buildver", getCookie(options.Cookies, "buildver"))
-		dataHeader.Add("resolution", getCookie(options.Cookies, "resolution", "1920x1080"))
-		dataHeader.Add("__csrf", getCookie(options.Cookies, "__csrf"))
-		dataHeader.Add("os", getCookie(options.Cookies, "os", "android"))
-		dataHeader.Add("channel", getCookie(options.Cookies, "channel"))
-		dataHeader.Add("channel", getCookie(options.Cookies, "channel"))
+		dataHeader.Add("osver", getCookie(options.cookies, "osver"))
+		dataHeader.Add("deviceId", getCookie(options.cookies, "deviceId"))
+		dataHeader.Add("appver", getCookie(options.cookies, "appver", "6.1.1"))
+		dataHeader.Add("versioncode", getCookie(options.cookies, "versioncode", "140"))
+		dataHeader.Add("mobilename", getCookie(options.cookies, "mobilename"))
+		dataHeader.Add("buildver", getCookie(options.cookies, "buildver"))
+		dataHeader.Add("resolution", getCookie(options.cookies, "resolution", "1920x1080"))
+		dataHeader.Add("__csrf", getCookie(options.cookies, "__csrf"))
+		dataHeader.Add("os", getCookie(options.cookies, "os", "android"))
+		dataHeader.Add("channel", getCookie(options.cookies, "channel"))
+		dataHeader.Add("channel", getCookie(options.cookies, "channel"))
 		dataHeader.Add("requestId", fmt.Sprintf("%d_%04d", time.Now().UnixNano()/1000000, r.Intn(1000)))
-		if c := getCookie(options.Cookies, "MUSIC_U"); c != "" {
+		if c := getCookie(options.cookies, "MUSIC_U"); c != "" {
 			dataHeader.Add("MUSIC_U", c)
 		}
-		if c := getCookie(options.Cookies, "MUSIC_A"); c != "" {
+		if c := getCookie(options.cookies, "MUSIC_A"); c != "" {
 			dataHeader.Add("MUSIC_A", c)
 		}
 		req.Header.Set("Cookie", "")
@@ -125,7 +125,7 @@ func requestCloudMusicApi(method, url string, data map[string]interface{}, optio
 			})
 		}
 		data["header"] = dataHeader
-		data = eapiEncrypt(options.Url, data)
+		data = eapiEncrypt(options.url, data)
 		reg, _ := regexp.Compile(`\w*api`)
 		url = reg.ReplaceAllString(url, "eapi")
 	}
@@ -144,7 +144,7 @@ func requestCloudMusicApi(method, url string, data map[string]interface{}, optio
 	return resp, nil
 }
 
-func responseDefault(method, url string, data map[string]interface{}, options *Options) (string, error) {
+func responseDefault(method, url string, data map[string]interface{}, options *options) (string, error) {
 	w, err := requestCloudMusicApi(method, url, data, options)
 	if err != nil {
 		return "", err
