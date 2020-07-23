@@ -33,6 +33,13 @@ func (query *Query) AddParam(name, value string) *Query {
 	return query
 }
 
+func (query *Query) GetParam(name string) string {
+	if query.Param == nil {
+		return ""
+	}
+	return query.Param.Get(name)
+}
+
 func (query *Query) AddCookie(name, value string) *Query {
 	if query.Cookies == nil {
 		query.Cookies = make([]*http.Cookie, 0)

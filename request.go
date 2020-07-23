@@ -52,6 +52,9 @@ func agent(ua ...userAgentType) (res string) {
 }
 
 func requestCloudMusicApi(method, url string, data map[string]interface{}, options *Options) (*http.Response, error) {
+	if data == nil {
+		data = make(map[string]interface{})
+	}
 	method = strings.ToUpper(method)
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {

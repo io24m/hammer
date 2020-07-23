@@ -21,16 +21,17 @@ const (
 	urlSongDetail          string = "https://music.163.com/weapi/v3/song/detail"
 	urlSongUrl             string = "https://music.163.com/api/song/enhance/player/url"
 	urlActivateInitProfile string = "http://music.163.com/eapi/activate/initProfile"
+	urlAlbum               string = "https://music.163.com/weapi/v1/album/%s"
 )
 
 func Login(query *Query) (string, error) {
 	var data = make(map[string]interface{})
-	data["username"] = query.Param.Get("email")
+	data["username"] = query.GetParam("email")
 	data["rememberLogin"] = "true"
-	if md5Password := query.Param.Get("md5_password"); strings.TrimSpace(md5Password) != "" {
+	if md5Password := query.GetParam("md5_password"); strings.TrimSpace(md5Password) != "" {
 		data["password"] = md5Password
 	} else {
-		pw := query.Param.Get("password")
+		pw := query.GetParam("password")
 		sum := md5.Sum([]byte(pw))
 		data["password"] = hex.EncodeToString(sum[:])
 	}
@@ -71,15 +72,15 @@ func Login(query *Query) (string, error) {
 
 func LoginCellphone(query *Query) (string, error) {
 	data := make(map[string]interface{}, 0)
-	data["phone"] = query.Param.Get("phone")
-	if cc := query.Param.Get("countrycode"); strings.TrimSpace(cc) != "" {
-		data["countrycode"] = query.Param.Get("countrycode")
+	data["phone"] = query.GetParam("phone")
+	if cc := query.GetParam("countrycode"); strings.TrimSpace(cc) != "" {
+		data["countrycode"] = query.GetParam("countrycode")
 	}
 	data["rememberLogin"] = "true"
-	if md5Password := query.Param.Get("md5_password"); strings.TrimSpace(md5Password) != "" {
+	if md5Password := query.GetParam("md5_password"); strings.TrimSpace(md5Password) != "" {
 		data["password"] = md5Password
 	} else {
-		pw := query.Param.Get("password")
+		pw := query.GetParam("password")
 		sum := md5.Sum([]byte(pw))
 		data["password"] = hex.EncodeToString(sum[:])
 	}
@@ -114,7 +115,7 @@ func LoginCellphone(query *Query) (string, error) {
 
 func PlaylistDetail(query *Query) (string, error) {
 	data := make(map[string]interface{}, 0)
-	data["id"] = query.Param.Get("id")
+	data["id"] = query.GetParam("id")
 	data["n"] = 100000
 	data["s"] = 8
 	options := &Options{
@@ -131,8 +132,8 @@ func SongUrl(query *Query) (string, error) {
 	}
 	query.Cookies = addCookie(query.Cookies, "os", "pc")
 	data := make(map[string]interface{}, 0)
-	data["ids"] = "[" + query.Param.Get("id") + "]"
-	if br := query.Param.Get("br"); strings.TrimSpace(br) != "" {
+	data["ids"] = "[" + query.GetParam("id") + "]"
+	if br := query.GetParam("br"); strings.TrimSpace(br) != "" {
 		data["br"] = br
 	}
 	data["br"] = 999000
@@ -145,7 +146,7 @@ func SongUrl(query *Query) (string, error) {
 }
 
 func SongDetail(query *Query) (string, error) {
-	ids := query.Param.Get("ids")
+	ids := query.GetParam("ids")
 	reg, _ := regexp.Compile(`\s*,\s*`)
 	idList := reg.Split(ids, -1)
 	c := make([]string, 0)
@@ -165,11 +166,21 @@ func SongDetail(query *Query) (string, error) {
 
 func ActivateInitProfile(query *Query) (string, error) {
 	data := make(map[string]interface{})
-	data["nickname"] = query.Param.Get("nickname")
+	data["nickname"] = query.GetParam("nickname")
 	options := &Options{
 		Crypto:  eapi,
 		Cookies: query.Cookies,
 		Url:     "/api/activate/initProfile",
 	}
 	return responseDefault(post, urlActivateInitProfile, data, options)
+}
+
+func Album(query *Query) (string, error) {
+	id := query.GetParam("id")
+	options := &Options{
+		Crypto:  weapi,
+		Cookies: query.Cookies,
+		Proxy:   query.Proxy,
+	}
+	return responseDefault(post, fmt.Sprintf(urlAlbum, id), nil, options)
 }
