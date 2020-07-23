@@ -250,6 +250,20 @@ func ArtistDesc(query *Query) (string, error) {
 }
 
 //ArtistList 歌手分类
+//type 取值
+// 1:男歌手
+// 2:女歌手
+// 3:乐队
+//
+// area 取值
+// -1:全部
+// 7华语
+// 96欧美
+// 8:日本
+// 16韩国
+// 0:其他
+//
+// initial 取值 a-z/A-Z
 func ArtistList(query *Query) (string, error) {
 	data := make(map[string]interface{})
 	data["initial"] = query.GetParam("initial")
