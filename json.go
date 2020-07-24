@@ -8,42 +8,40 @@ import (
 )
 
 type IJson struct {
-	data []byte
 	json interface{}
 }
 
 func ReadJson(jsonStr string) (*IJson, error) {
-	ijson := &IJson{
-		data: []byte(jsonStr),
+	j := &IJson{
 		json: make(map[string]interface{}),
 	}
-	err := json.Unmarshal(ijson.data, &ijson.json)
+	err := json.Unmarshal([]byte(jsonStr), &j.json)
 	if err != nil {
 		return nil, err
 	}
-	return ijson, nil
+	return j, nil
 }
 
-func (json *IJson) Get(keys ...string) *IJsonNode {
+func (json *IJson) Get(keys ...string) *IJson {
 	if len(keys) == 0 {
-		return &IJsonNode{node: json.json}
+		return &IJson{json: json.json}
 	}
 	key := keys[0]
 	m, err := jsonKey(key)
 	if err != nil {
-		return &IJsonNode{}
+		return &IJson{}
 	}
 	return json.get(m)
 }
 
-func (json *IJson) get(m map[int]*nodeKey) *IJsonNode {
+func (json *IJson) get(m map[int]*nodeKey) *IJson {
 	var j interface{}
 	j = json.json
 	l := len(m)
 	for i := 0; i < l; i++ {
 		j = g(j, m[i])
 	}
-	return &IJsonNode{node: j}
+	return &IJson{json: j}
 }
 
 func g(i interface{}, key *nodeKey) interface{} {
@@ -60,17 +58,14 @@ func g(i interface{}, key *nodeKey) interface{} {
 	if !ok || l <= key.index {
 		return v
 	}
-	//if l > 0 && l <= key.index {
-	//	return s[0]
-	//}
 	return s[key.index]
 }
 
 type IJsonNodeList struct {
-	nodes []*IJsonNode
+	nodes []*IJson
 }
 
-func (jsonList *IJsonNodeList) Nodes() []*IJsonNode {
+func (jsonList *IJsonNodeList) Nodes() []*IJson {
 	return jsonList.nodes
 }
 
@@ -126,57 +121,49 @@ func (jsonList *IJsonNodeList) Booleans() ([]bool, error) {
 	return r, nil
 }
 
-type IJsonNode struct {
-	node interface{}
-}
-
-func (node *IJsonNode) Map(keys ...string) *IJsonNodeList {
+func (node *IJson) Map(keys ...string) *IJsonNodeList {
 	list := &IJsonNodeList{}
-	list.nodes = make([]*IJsonNode, 0)
-	ls, ok := node.node.([]interface{})
+	list.nodes = make([]*IJson, 0)
+	ls, ok := node.json.([]interface{})
 	if !ok {
 		list.nodes = append(list.nodes, node)
 		return list
 	}
-	key := ""
-	if len(keys) > 0 {
-		key = keys[0]
-	}
 	for _, v := range ls {
 		iJson := &IJson{json: v}
-		jsonNode := iJson.Get(key)
+		jsonNode := iJson.Get(keys...)
 		list.nodes = append(list.nodes, jsonNode)
 	}
 	return list
 }
 
-func (node *IJsonNode) Value() interface{} {
-	return node.node
+func (node *IJson) Value() interface{} {
+	return node.json
 }
 
-func (node *IJsonNode) Bool() (bool, error) {
-	if b, ok := node.node.(bool); ok {
+func (node *IJson) Bool() (bool, error) {
+	if b, ok := node.json.(bool); ok {
 		return b, nil
 	}
 	return false, errors.New("not bool")
 }
 
-func (node *IJsonNode) Int() (int64, error) {
-	if f, ok := node.node.(float64); ok {
+func (node *IJson) Int() (int64, error) {
+	if f, ok := node.json.(float64); ok {
 		return int64(f), nil
 	}
 	return 0, errors.New("not int")
 }
 
-func (node *IJsonNode) Float() (float64, error) {
-	if f, ok := node.node.(float64); ok {
+func (node *IJson) Float() (float64, error) {
+	if f, ok := node.json.(float64); ok {
 		return f, nil
 	}
 	return 0, errors.New("not float")
 }
 
-func (node *IJsonNode) String() string {
-	switch s := node.node.(type) {
+func (node *IJson) String() string {
+	switch s := node.json.(type) {
 	default:
 		return ""
 	case string:

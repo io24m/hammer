@@ -34,17 +34,16 @@ func TestRun(t *testing.T) {
 
 func TestReadJson(t *testing.T) {
 	var s interface{}
-	j, _ := ReadJson(`[{"ss":null,"a":1,"b":2,"C":[1,2],"d":[{"e":"qw"},{"e":"qw"}]}]`)
-
-	s = j.Get("ss").String()
+	j, _ := ReadJson(`{"q":"w","ss":[{"ss":null,"a":1,"b":2,"C":[1,2],"d":[{"e":"qw"},{"e":"qw"}]}]}`)
+	s = j.Get("q").String()
 	fmt.Println(s)
-	s = j.Get("b").String()
+	s = j.Get("w").String()
 	fmt.Println(s)
 	s = j.Get("C[1]").String()
 	fmt.Println(s)
 	s = j.Get("d[1].e").String()
 	fmt.Println(s)
-	s = j.Get().Map("d[0].e").Values()
+	s = j.Get("ss").Map("d").Nodes()[0].Map("e").Values()
 	fmt.Println(s)
 	//DownPlayListSong()
 }
