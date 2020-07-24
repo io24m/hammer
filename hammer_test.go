@@ -1,6 +1,7 @@
 package hammer
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -29,4 +30,21 @@ func TestRun(t *testing.T) {
 	t.Log(get.StatusCode)
 	all, _ := ioutil.ReadAll(get.Body)
 	t.Log(string(all))
+}
+
+func TestReadJson(t *testing.T) {
+	var s interface{}
+	j, _ := ReadJson(`[{"ss":null,"a":1,"b":2,"C":[1,2],"d":[{"e":"qw"},{"e":"qw"}]}]`)
+
+	s = j.Get("ss").String()
+	fmt.Println(s)
+	s = j.Get("b").String()
+	fmt.Println(s)
+	s = j.Get("C[1]").String()
+	fmt.Println(s)
+	s = j.Get("d[1].e").String()
+	fmt.Println(s)
+	s = j.Get().Map("d[0].e").Values()
+	fmt.Println(s)
+	//DownPlayListSong()
 }

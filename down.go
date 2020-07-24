@@ -2,7 +2,6 @@ package hammer
 
 import (
 	"fmt"
-	"github.com/thedevsaddam/gojsonq"
 	"io"
 	"net/http"
 	"net/url"
@@ -73,8 +72,9 @@ func getIds(cfg *Cfg) []string {
 	if err != nil {
 		panic(err)
 	}
-	trackIds := gojsonq.New().JSONString(resp).From("playlist.trackIds").Select("id").Get()
-	return getIdArray(trackIds)
+	json, _ := ReadJson(resp)
+	ids := json.Get("playlist.trackIds").Map("id").Strings()
+	return ids
 }
 
 func getIdArray(i interface{}) (res []string) {
@@ -88,18 +88,15 @@ func getIdArray(i interface{}) (res []string) {
 }
 
 func getSongs(cfg *Cfg, ids []string) (res map[string]*songDetails) {
-	params := strings.Join(ids, ",")
-	query := &Query{
-		Param: url.Values{},
-	}
-	query.Param.Add("id", params)
+	query := &Query{}
+	query.AddParam("id", strings.Join(ids, ","))
 	song, err := SongUrl(query)
-	//respSongs, err := http.Get(cfg.host + "/song/url?id=" + params)
 	if err != nil {
 		panic(err)
 	}
-	datas := gojsonq.New().JSONString(song).From("data")
-	res = id2url(datas.Select("id", "url", "type").Get())
+	json, _ := ReadJson(song)
+	node := json.Get("data").Map().Values()
+	res = id2url(node)
 	return
 }
 
@@ -110,12 +107,11 @@ func getSongNames(cfg *Cfg, ids []string) (res map[string]*songDetails) {
 	}
 	query.Param.Add("ids", params)
 	detail, err := SongDetail(query)
-	//respSongs, err := http.Get(cfg.host + "/song/detail?ids=" + params)
 	if err != nil {
 		panic(err)
 	}
-	datas := gojsonq.New().JSONString(detail).From("songs")
-	idname := datas.Select("id", "name").Get()
+	json, _ := ReadJson(detail)
+	idname := json.Get("songs").Map().Values()
 	res = id2name(idname)
 	return
 }
@@ -132,7 +128,6 @@ func id2url(i interface{}) map[string]*songDetails {
 		if m["url"] == nil {
 			continue
 		}
-
 		res[id] = &songDetails{songId: id, url: m["url"].(string), songType: m["type"].(string)}
 	}
 	return res
