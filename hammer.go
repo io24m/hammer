@@ -63,6 +63,7 @@ func initRoute() {
 		ArtistAlbum,
 		ArtistDesc,
 		ArtistList,
+		ArtistMv,
 	}
 	route = funcNames(f)
 }

@@ -28,6 +28,7 @@ const (
 	urlArtistAlbum         string = "https://music.163.com/weapi/artist/albums/%s"
 	urlArtistDesc          string = "https://music.163.com/weapi/artist/introduction"
 	urlArtistList          string = "https://music.163.com/api/v1/artist/list"
+	urlArtistMv            string = "https://music.163.com/weapi/artist/mvs"
 )
 
 //Login 邮箱登录
@@ -250,20 +251,9 @@ func ArtistDesc(query *Query) (string, error) {
 }
 
 //ArtistList 歌手分类
-//type 取值
-// 1:男歌手
-// 2:女歌手
-// 3:乐队
-//
-// area 取值
-// -1:全部
-// 7华语
-// 96欧美
-// 8:日本
-// 16韩国
-// 0:其他
-//
-// initial 取值 a-z/A-Z
+//type 取值[1:男歌手、2:女歌手、3:乐队]
+//area 取值[-1:全部、7华语、96欧美、8:日本、16韩国、0:其他]
+//initial 取值 a-z/A-Z
 func ArtistList(query *Query) (string, error) {
 	data := make(map[string]interface{})
 	data["initial"] = query.GetParam("initial")
@@ -274,4 +264,15 @@ func ArtistList(query *Query) (string, error) {
 	data["area"] = query.GetParam("area")
 	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
 	return responseDefault(post, urlArtistList, data, opt)
+}
+
+//ArtistMv 歌手相关MV
+func ArtistMv(query *Query) (string, error) {
+	data := make(map[string]interface{})
+	data["artistId"] = query.GetParam("id")
+	data["limit"] = query.GetParam("limit")
+	data["offset"] = query.GetParam("offset")
+	data["total"] = true
+	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
+	return responseDefault(post, urlArtistMv, data, opt)
 }
