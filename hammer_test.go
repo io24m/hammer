@@ -47,3 +47,10 @@ func TestReadJson(t *testing.T) {
 	fmt.Println(s)
 	//DownPlayListSong()
 }
+
+func TestMp3Read(t *testing.T) {
+	bytes := reSize(3456)
+	i := size(bytes)
+	fmt.Println(i)
+	Mp3Header()
+}
