@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 )
 
@@ -49,8 +50,13 @@ func TestReadJson(t *testing.T) {
 }
 
 func TestMp3Read(t *testing.T) {
-	bytes := reSize(3456)
-	i := size(bytes)
-	fmt.Println(i)
-	Mp3Header()
+	test, _ := os.Open(`C:\down\NeteaseCloudMusic\test.mp3`)
+	defer test.Close()
+	testTitle, _ := os.Create(`C:\down\NeteaseCloudMusic\testTitle.mp3`)
+	defer testTitle.Close()
+	bytes, _ := openMp3(test)
+	mp3 := Mp3_ID3V2_3(bytes)
+	mp3.Tag("TIT2", "12121")
+	write, _ := testTitle.Write(mp3.Byte())
+	fmt.Println(write)
 }
