@@ -13,7 +13,7 @@ type Mp3 struct {
 func (mp3 *Mp3) Tag(name, value string) {
 	//修改frame
 	//修改header size
-	frame := mp3.Header.frames[0]
+	frame := mp3.Header.frames[name]
 	if frame == nil {
 		return
 	}
@@ -25,6 +25,8 @@ func (mp3 *Mp3) Tag(name, value string) {
 func (mp3 *Mp3) Byte() []byte {
 	bytes := mp3.Header.Byte()
 	bytes = append(bytes, mp3.Body...)
+	var end [10]byte
+	bytes = append(bytes, end[:]...)
 	return bytes
 }
 
@@ -50,7 +52,7 @@ type ID3V2_3Header struct {
 	revision byte
 	flags    byte
 	size     [4]byte
-	frames   map[int]*ID3V2_3Frame
+	frames   map[string]*ID3V2_3Frame
 }
 
 type ID3V2_3Frame struct {
@@ -73,9 +75,13 @@ func (h *ID3V2_3Header) Byte() []byte {
 
 func (h *ID3V2_3Header) Frames() []byte {
 	tags := make([]byte, 0)
-	l := len(h.frames)
-	for i := 0; i < l; i++ {
-		tags = append(tags, h.frames[i].Byte()...)
+	//l := len(h.frames)
+	//for i := 0; i < l; i++ {
+	//	tags = append(tags, h.frames[i].Byte()...)
+	//}
+
+	for _, v := range h.frames {
+		tags = append(tags, v.Byte()...)
 	}
 	return tags
 }
@@ -171,14 +177,17 @@ func Mp3_ID3V2_3(bytes []byte) (mp3 *Mp3) {
 	mp3.Header = readID3V2_3Header(bytes)
 	mp3.Body = bytes[mp3.Header.Length():]
 	frames := bytes[10 : mp3.Header.ContentSize()+10]
-	m := make(map[int]*ID3V2_3Frame)
+	m := make(map[string]*ID3V2_3Frame)
 	key := 0
 	for {
 		if len(frames) <= 0 {
 			break
 		}
 		frame := readFrame(frames)
-		m[key] = frame
+		if len(frame.size) < 1 {
+			continue
+		}
+		m[string(frame.frameId[:])] = frame
 		key++
 		i := frame.Length()
 		if len(frames) < i {
