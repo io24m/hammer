@@ -1,4 +1,4 @@
-package hammer
+package mp3
 
 import (
 	"io"
@@ -30,7 +30,7 @@ func (mp3 *Mp3) Byte() []byte {
 	return bytes
 }
 
-func openMp3(f *os.File) ([]byte, error) {
+func ReadFile(f *os.File) ([]byte, error) {
 	var chunk []byte
 	buf := make([]byte, 1024)
 	for {
@@ -173,6 +173,7 @@ func readFrame(bts []byte) *ID3V2_3Frame {
 }
 
 func Mp3_ID3V2_3(bytes []byte) (mp3 *Mp3) {
+
 	mp3 = new(Mp3)
 	mp3.Header = readID3V2_3Header(bytes)
 	mp3.Body = bytes[mp3.Header.Length():]
@@ -198,47 +199,3 @@ func Mp3_ID3V2_3(bytes []byte) (mp3 *Mp3) {
 	mp3.Header.frames = m
 	return
 }
-
-//func Mp3_ID3V2(mp3 []byte) {
-//	open, _ := os.Open(`C:\down\NeteaseCloudMusic\test.mp3`)
-//	defer open.Close()
-//	open01, _ := os.Create(`C:\down\NeteaseCloudMusic\test01.mp3`)
-//	defer open01.Close()
-//	bts, err := openMp3(open)
-//	header := readID3V2_3Header(bts)
-//	body := bts[header.Length():]
-//	frames := header.content
-//	m := make(map[int]*ID3V2_3Frame)
-//	var key = 0
-//	count := 0
-//	for {
-//		if len(frames) <= 0 {
-//			break
-//		}
-//		frame := readFrame(frames)
-//		count += frame.Length()
-//		fmt.Println(frame.String())
-//		m[key] = frame
-//		key++
-//		i := frame.Length()
-//		if len(frames) < i {
-//			break
-//		}
-//		frames = frames[i:]
-//	}
-//	all := make([]byte, 0)
-//	for i := 0; i < key; i++ {
-//		v2Frame := m[i]
-//		if string(v2Frame.frameId[:]) == "TIT2" {
-//			fmt.Println(len(v2Frame.content))
-//			v2Frame.Content("dsadsa")
-//			fmt.Println(len(v2Frame.content))
-//		}
-//		all = append(all, v2Frame.Byte()...)
-//	}
-//	header.Content(all)
-//	all = header.Byte()
-//	all = append(all, body...)
-//	write, err := open01.Write(all)
-//	fmt.Println(write, err)
-//}

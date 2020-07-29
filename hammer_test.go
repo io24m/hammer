@@ -2,16 +2,13 @@ package hammer
 
 import (
 	"fmt"
+	mp3pkg "github.com/io24m/hammer/mp3"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 )
-
-func t1() {
-
-}
 
 func TestRun(t *testing.T) {
 	initRoute()
@@ -54,9 +51,9 @@ func TestMp3Read(t *testing.T) {
 	defer test.Close()
 	testTitle, _ := os.Create(`C:\down\NeteaseCloudMusic\testTitle.mp3`)
 	defer testTitle.Close()
-	bytes, _ := openMp3(test)
-	mp3 := Mp3_ID3V2_3(bytes)
-	mp3.Tag("TIT2", "12121")
+	bytes, _ := mp3pkg.ReadFile(test)
+	mp3 := mp3pkg.Mp3_ID3V2_3(bytes)
+	mp3.Tag("TIT2", "test")
 	write, _ := testTitle.Write(mp3.Byte())
 	fmt.Println(write)
 }
