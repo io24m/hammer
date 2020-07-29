@@ -54,6 +54,5 @@ func TestMp3Read(t *testing.T) {
 	bytes, _ := mp3pkg.ReadFile(test)
 	mp3 := mp3pkg.Mp3_ID3V2_3(bytes)
 	mp3.Tag("TIT2", "test")
-	write, _ := testTitle.Write(mp3.Byte())
-	fmt.Println(write)
+	testTitle.Write(mp3.Byte())
 }
