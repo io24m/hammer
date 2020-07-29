@@ -75,11 +75,6 @@ func (h *ID3V2_3Header) Byte() []byte {
 
 func (h *ID3V2_3Header) Frames() []byte {
 	tags := make([]byte, 0)
-	//l := len(h.frames)
-	//for i := 0; i < l; i++ {
-	//	tags = append(tags, h.frames[i].Byte()...)
-	//}
-
 	for _, v := range h.frames {
 		tags = append(tags, v.Byte()...)
 	}
@@ -173,23 +168,17 @@ func readFrame(bts []byte) *ID3V2_3Frame {
 }
 
 func Mp3_ID3V2_3(bytes []byte) (mp3 *Mp3) {
-
 	mp3 = new(Mp3)
 	mp3.Header = readID3V2_3Header(bytes)
 	mp3.Body = bytes[mp3.Header.Length():]
 	frames := bytes[10 : mp3.Header.ContentSize()+10]
 	m := make(map[string]*ID3V2_3Frame)
-	key := 0
 	for {
 		if len(frames) <= 0 {
 			break
 		}
 		frame := readFrame(frames)
-		if len(frame.size) < 1 {
-			continue
-		}
 		m[string(frame.frameId[:])] = frame
-		key++
 		i := frame.Length()
 		if len(frames) < i {
 			break
