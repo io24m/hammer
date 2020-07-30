@@ -2,7 +2,7 @@ package hammer
 
 import (
 	"fmt"
-	"io"
+	"github.com/io24m/hammer/mp3"
 	"net/http"
 	"net/url"
 	"os"
@@ -29,15 +29,17 @@ func DownPlayListSong() {
 	for _, v := range songs {
 		works <- struct{}{}
 		wg.Add(1)
-		go func(url, path string) {
+		go func(cfg *Cfg, song *songDetails) {
 			defer wg.Done()
-			down(url, path)
+			//url := song.url
+			path := cfg.SavePath + song.songName + `.` + song.songType
+			down(cfg, song)
 			mux.Lock()
 			completeCount++
 			fmt.Println(strconv.Itoa(completeCount) + ":" + path)
 			mux.Unlock()
 			<-works
-		}(v.url, cfg.SavePath+v.songName+`.`+v.songType)
+		}(cfg, v)
 	}
 	wg.Wait()
 	fmt.Println("complete")
@@ -144,19 +146,38 @@ func id2name(i interface{}) map[string]*songDetails {
 	return res
 }
 
-func down(url, path string) {
+func down(cfg *Cfg, song *songDetails) {
+	path := cfg.SavePath + song.songName + `.` + song.songType
 	f, err := os.Create(path)
 	if err != nil {
 		panic(err)
 	}
 	defer f.Close()
-	resp, err := http.Get(url)
+	resp, err := http.Get(song.url)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	defer resp.Body.Close()
-	_, err = io.Copy(f, resp.Body)
+	//_, err = io.Copy(f, resp.Body)
+	//if err != nil {
+	//	fmt.Println(err)
+	//	return
+	//}
+	//test
+	bytes, err := readBytes(resp.Body)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	v2_3, err := mp3.Mp3_ID3V2_3(bytes)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	v2_3.Tag(mp3.TIT2, song.songName)
+	fmt.Println(v2_3.Tags())
+	_, err = f.Write(v2_3.Byte())
 	if err != nil {
 		fmt.Println(err)
 		return

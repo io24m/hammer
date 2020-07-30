@@ -43,7 +43,6 @@ func TestReadJson(t *testing.T) {
 	fmt.Println(s)
 	s = j.Get("ss").Map("d").Nodes()[0].Map("e").Values()
 	fmt.Println(s)
-	//DownPlayListSong()
 }
 
 func TestMp3Read(t *testing.T) {
@@ -51,8 +50,15 @@ func TestMp3Read(t *testing.T) {
 	defer test.Close()
 	testTitle, _ := os.Create(`C:\down\NeteaseCloudMusic\testTitle.mp3`)
 	defer testTitle.Close()
-	bytes, _ := mp3pkg.ReadFile(test)
-	mp3 := mp3pkg.Mp3_ID3V2_3(bytes)
-	mp3.Tag("TIT2", "test")
+	bytes, _ := readBytes(test)
+	mp3, _ := mp3pkg.Mp3_ID3V2_3(bytes)
+	//mp3.Tag(mp3pkg.TIT2, "test")
 	testTitle.Write(mp3.Byte())
+}
+
+func TestDownPlayListSong(t *testing.T) {
+	cfg := Config()
+	cfg.SavePath = `\down\NeteaseCloudMusic\temp\`
+	cfg.ConcurrentCount = 1
+	DownPlayListSong()
 }

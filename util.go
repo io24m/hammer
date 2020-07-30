@@ -1,6 +1,7 @@
 package hammer
 
 import (
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -43,6 +44,18 @@ func getCookie(cookies []*http.Cookie, name string, defaultValue ...string) stri
 	return defaultValue[0]
 }
 
-func addCookie(cookie []*http.Cookie, name, value string) []*http.Cookie {
-	return append(cookie, &http.Cookie{Name: name, Value: value})
+func readBytes(reader io.Reader) ([]byte, error) {
+	var chunk []byte
+	buf := make([]byte, 1024)
+	for {
+		n, err := reader.Read(buf)
+		if err != nil && err != io.EOF {
+			return nil, err
+		}
+		if n == 0 {
+			break
+		}
+		chunk = append(chunk, buf[:n]...)
+	}
+	return chunk, nil
 }
