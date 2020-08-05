@@ -29,6 +29,7 @@ const (
 	urlArtistDesc          string = "https://music.163.com/weapi/artist/introduction"
 	urlArtistList          string = "https://music.163.com/api/v1/artist/list"
 	urlArtistMv            string = "https://music.163.com/weapi/artist/mvs"
+	urlArtistSub           string = "https://music.163.com/weapi/artist/%s"
 )
 
 //Login 邮箱登录
@@ -275,4 +276,17 @@ func ArtistMv(query *Query) (string, error) {
 	data["total"] = true
 	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
 	return responseDefault(post, urlArtistMv, data, opt)
+}
+
+//ArtistSub 收藏与取消收藏歌手
+func ArtistSub(query *Query) (string, error) {
+	data := make(map[string]interface{})
+	data["artistId"] = query.GetParam("id")
+	data["artistIds"] = "[" + query.GetParam("id") + "]"
+	t := "sub"
+	if query.GetParam("t") != "1" {
+		t = "unsub"
+	}
+	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
+	return responseDefault(post, fmt.Sprintf(urlArtistSub, t), data, opt)
 }
