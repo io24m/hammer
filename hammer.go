@@ -47,28 +47,6 @@ type requestFunc func(*Query) (string, error)
 
 var route map[string]requestFunc
 
-func initRoute() {
-	f := []requestFunc{
-		Login,
-		LoginCellphone,
-		PlaylistDetail,
-		SongDetail,
-		SongUrl,
-		ActivateInitProfile,
-		Album,
-		AlbumDetailDynamic,
-		AlbumNewest,
-		AlbumSub,
-		AlbumSublist,
-		ArtistAlbum,
-		ArtistDesc,
-		ArtistList,
-		ArtistMv,
-		ArtistSub,
-	}
-	route = funcNames(f)
-}
-
 func funcNames(f []requestFunc) map[string]requestFunc {
 	reg, _ := regexp.Compile(`[A-Z]`)
 	res := make(map[string]requestFunc)

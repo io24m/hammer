@@ -12,24 +12,32 @@ import (
 )
 
 const (
-	post                   string = "POST"
-	get                    string = "GET"
-	urlLogin               string = "https://music.163.com/weapi/login"
-	urlLoginCellphone      string = "https://music.163.com/weapi/login/cellphone"
-	urlPlaylistDetail      string = "https://music.163.com/weapi/v3/playlist/detail"
-	urlSongDetail          string = "https://music.163.com/weapi/v3/song/detail"
-	urlSongUrl             string = "https://music.163.com/api/song/enhance/player/url"
-	urlActivateInitProfile string = "http://music.163.com/eapi/activate/initProfile"
-	urlAlbum               string = "https://music.163.com/weapi/v1/album/%s"
-	urlAlbumDetailDynamic  string = "https://music.163.com/api/album/detail/dynamic"
-	urlAlbumNewest         string = "https://music.163.com/api/discovery/newAlbum"
-	urlAlbumSub            string = "https://music.163.com/api/album/%s"
-	urlAlbumSublist        string = "https://music.163.com/weapi/album/sublist"
-	urlArtistAlbum         string = "https://music.163.com/weapi/artist/albums/%s"
-	urlArtistDesc          string = "https://music.163.com/weapi/artist/introduction"
-	urlArtistList          string = "https://music.163.com/api/v1/artist/list"
-	urlArtistMv            string = "https://music.163.com/weapi/artist/mvs"
-	urlArtistSub           string = "https://music.163.com/weapi/artist/%s"
+	post                       string = "POST"
+	get                        string = "GET"
+	urlLogin                   string = "https://music.163.com/weapi/login"
+	urlLoginCellphone          string = "https://music.163.com/weapi/login/cellphone"
+	urlPlaylistDetail          string = "https://music.163.com/weapi/v3/playlist/detail"
+	urlSongDetail              string = "https://music.163.com/weapi/v3/song/detail"
+	urlSongUrl                 string = "https://music.163.com/api/song/enhance/player/url"
+	urlActivateInitProfile     string = "http://music.163.com/eapi/activate/initProfile"
+	urlAlbum                   string = "https://music.163.com/weapi/v1/album/%s"
+	urlAlbumDetailDynamic      string = "https://music.163.com/api/album/detail/dynamic"
+	urlAlbumNewest             string = "https://music.163.com/api/discovery/newAlbum"
+	urlAlbumSub                string = "https://music.163.com/api/album/%s"
+	urlAlbumSublist            string = "https://music.163.com/weapi/album/sublist"
+	urlArtistAlbum             string = "https://music.163.com/weapi/artist/albums/%s"
+	urlArtistDesc              string = "https://music.163.com/weapi/artist/introduction"
+	urlArtistList              string = "https://music.163.com/api/v1/artist/list"
+	urlArtistMv                string = "https://music.163.com/weapi/artist/mvs"
+	urlArtistSub               string = "https://music.163.com/weapi/artist/%s"
+	urlArtistSublist           string = "https://music.163.com/weapi/artist/sublist"
+	urlArtistTopSong           string = "https://music.163.com/api/artist/top/song"
+	urlArtists                 string = "https://music.163.com/weapi/v1/artist/%s"
+	urlBanner                  string = "https://music.163.com/api/v2/banner/get"
+	urlBatch                   string = "http://music.163.com/eapi/batch"
+	urlCaptchaSent             string = "https://music.163.com/weapi/sms/captcha/sent"
+	urlCaptchaVerify           string = "https://music.163.com/weapi/sms/captcha/verify"
+	urlCellphoneExistenceCheck string = "http://music.163.com/eapi/cellphone/existence/check"
 )
 
 //Login 邮箱登录
@@ -289,4 +297,90 @@ func ArtistSub(query *Query) (string, error) {
 	}
 	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
 	return responseDefault(post, fmt.Sprintf(urlArtistSub, t), data, opt)
+}
+
+//ArtistSublist 关注歌手列表
+func ArtistSublist(query *Query) (string, error) {
+	data := make(map[string]interface{})
+	data["limit"] = query.GetParamOrDefault("limit", 25)
+	data["offset"] = query.GetParamOrDefault("offset", 0)
+	data["total"] = true
+	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
+	return responseDefault(post, urlArtistSublist, data, opt)
+}
+
+//ArtistTopSong 歌手热门 50 首歌曲
+func ArtistTopSong(query *Query) (string, error) {
+	data := make(map[string]interface{})
+	data["id"] = query.GetParam("id")
+	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
+	return responseDefault(post, urlArtistTopSong, data, opt)
+}
+
+//Artists 歌手单曲
+func Artists(query *Query) (string, error) {
+	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
+	return responseDefault(post, fmt.Sprintf(urlArtists, query.GetParam("id")), nil, opt)
+}
+
+//Banner 首页轮播图
+func Banner(query *Query) (string, error) {
+	platform := map[interface{}]string{
+		"0": "pc",
+		"1": "android",
+		"2": "iphone",
+		"3": "ipad",
+	}
+	data := make(map[string]interface{})
+	t := platform[query.GetParamOrDefault("type", "0")]
+	if t == "" {
+		t = "pc"
+	}
+	data["clientType"] = t
+	opt := &options{crypto: linuxapi, cookies: query.Cookies, proxy: query.Proxy}
+	return responseDefault(post, urlBanner, data, opt)
+}
+
+//Batch 批量请求接口
+func Batch(query *Query) (string, error) {
+	data := make(map[string]interface{})
+	reg, _ := regexp.Compile(`^/api/`)
+	data["e_r"] = true
+	for k, v := range query.Param {
+		if !reg.MatchString(k) {
+			continue
+		}
+		data[k] = v
+	}
+	opt := &options{crypto: eapi, cookies: query.Cookies, proxy: query.Proxy}
+	return responseDefault(post, urlBatch, data, opt)
+}
+
+//CaptchaSent 发送验证码
+func CaptchaSent(query *Query) (string, error) {
+	data := make(map[string]interface{})
+	data["ctcode"] = query.GetParamOrDefault("ctcode", "86")
+	data["cellphone"] = query.GetParam("phone")
+	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
+	return responseDefault(post, urlCaptchaSent, data, opt)
+}
+
+//CaptchaVerify 校验验证码
+func CaptchaVerify(query *Query) (string, error) {
+	data := make(map[string]interface{})
+	data["ctcode"] = query.GetParamOrDefault("ctcode", "86")
+	data["cellphone"] = query.GetParam("phone")
+	data["captcha"] = query.GetParam("captcha")
+	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
+	return responseDefault(post, urlCaptchaVerify, data, opt)
+}
+
+//CellphoneExistenceCheck 检测手机号码是否已注册
+func CellphoneExistenceCheck(query *Query) (string, error) {
+	data := map[string]interface{}{
+		"cellphone":   query.GetParam("phone"),
+		"countrycode": query.GetParam("countrycode"),
+	}
+	opt := &options{crypto: eapi, cookies: query.Cookies, proxy: query.Proxy, url: "/api/cellphone/existence/check"}
+	return responseDefault(post, urlCellphoneExistenceCheck, data, opt)
 }
