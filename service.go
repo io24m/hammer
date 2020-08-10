@@ -43,6 +43,10 @@ const (
 	urlCommentAlbum            string = "https://music.163.com/weapi/v1/resource/comments/R_AL_3_%s"
 	urlCommentDj               string = "https://music.163.com/weapi/v1/resource/comments/A_DJ_1_%s"
 	urlCommentEvent            string = "https://music.163.com/weapi/v1/resource/comments/%s"
+	urlCommentHot              string = "https://music.163.com/weapi/v1/resource/hotcomments/%s%s"
+	urlCommentHotwallList      string = "https://music.163.com/api/comment/hotwall/list/get"
+	urlCommentLike             string = "https://music.163.com/weapi/v1/comment/%s"
+	urlCommentMusic            string = "https://music.163.com/api/v1/resource/comments/R_SO_4_%s"
 )
 
 //Login 邮箱登录
@@ -491,4 +495,71 @@ func CommentEvent(query *Query) (string, error) {
 	data["beforeTime"] = query.GetParamOrDefault("before", 0)
 	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
 	return responseDefault(post, fmt.Sprintf(urlCommentEvent, query.GetParam("threadId")), data, opt)
+}
+
+//CommentHot 热门评论
+func CommentHot(query *Query) (string, error) {
+	query.AddCookie("os", "pc")
+	m := map[string]string{
+		"0": "R_SO_4_",  //  歌曲
+		"1": "R_MV_5_",  //  MV
+		"2": "A_PL_0_",  //  歌单
+		"3": "R_AL_3_",  //  专辑
+		"4": "A_DJ_1_",  //  电台,
+		"5": "R_VI_62_", //  视频
+	}
+	t := m[query.GetParam("type")]
+	data := make(map[string]interface{})
+	id := query.GetParam("id")
+	data["rid"] = id
+	data["limit"] = query.GetParamOrDefault("limit", 20)
+	data["offset"] = query.GetParamOrDefault("offset", 0)
+	data["beforeTime"] = query.GetParamOrDefault("before", 0)
+	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
+	return responseDefault(post, fmt.Sprintf(urlCommentHot, t, id), data, opt)
+}
+
+//CommentHotwallList 云村热评
+func CommentHotwallList(query *Query) (string, error) {
+	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
+	return responseDefault(post, urlCommentHotwallList, nil, opt)
+}
+
+//CommentLike 点赞与取消点赞评论
+func CommentLike(query *Query) (string, error) {
+	query.AddCookie("os", "pc")
+	t := "unlike"
+	if query.GetParam("t") == "1" {
+		t = "like"
+	}
+	m := map[string]string{
+		"0": "R_SO_4_",  //  歌曲
+		"1": "R_MV_5_",  //  MV
+		"2": "A_PL_0_",  //  歌单
+		"3": "R_AL_3_",  //  专辑
+		"4": "A_DJ_1_",  //  电台,
+		"5": "R_VI_62_", //  视频
+		"6": "A_EV_2_",  //  动态
+	}
+	tp := m[query.GetParam("type")]
+	data := make(map[string]interface{})
+	data["threadId"] = tp + query.GetParam("id")
+	if tp == "A_EV_2_" {
+		data["threadId"] = query.GetParam("threadId")
+	}
+	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
+	return responseDefault(post, fmt.Sprintf(urlCommentLike, t), data, opt)
+}
+
+//CommentMusic 歌曲评论
+func CommentMusic(query *Query) (string, error) {
+	query.AddCookie("os", "pc")
+	data := make(map[string]interface{})
+	id := query.GetParam("id")
+	data["rid"] = id
+	data["limit"] = query.GetParamOrDefault("limit", 20)
+	data["offset"] = query.GetParamOrDefault("offset", 0)
+	data["beforeTime"] = query.GetParamOrDefault("before", 0)
+	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
+	return responseDefault(post, fmt.Sprintf(urlCommentMusic, id), data, opt)
 }
