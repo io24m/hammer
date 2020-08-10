@@ -38,6 +38,10 @@ const (
 	urlCaptchaSent             string = "https://music.163.com/weapi/sms/captcha/sent"
 	urlCaptchaVerify           string = "https://music.163.com/weapi/sms/captcha/verify"
 	urlCellphoneExistenceCheck string = "http://music.163.com/eapi/cellphone/existence/check"
+	urlCheckMusic              string = "https://music.163.com/weapi/song/enhance/player/url"
+	urlComment                 string = "https://music.163.com/weapi/resource/comments/%s"
+	urlCommentAlbum            string = "https://music.163.com/weapi/v1/resource/comments/R_AL_3_%s"
+	urlCommentDj               string = "https://music.163.com/weapi/v1/resource/comments/A_DJ_1_%s"
 )
 
 //Login 邮箱登录
@@ -332,8 +336,8 @@ func Banner(query *Query) (string, error) {
 		"3": "ipad",
 	}
 	data := make(map[string]interface{})
-	t := platform[query.GetParamOrDefault("type", "0")]
-	if t == "" {
+	t, ok := platform[query.GetParamOrDefault("type", "0")]
+	if !ok {
 		t = "pc"
 	}
 	data["clientType"] = t
@@ -383,4 +387,97 @@ func CellphoneExistenceCheck(query *Query) (string, error) {
 	}
 	opt := &options{crypto: eapi, cookies: query.Cookies, proxy: query.Proxy, url: "/api/cellphone/existence/check"}
 	return responseDefault(post, urlCellphoneExistenceCheck, data, opt)
+}
+
+//CheckMusic 歌曲可用性
+func CheckMusic(query *Query) (string, error) {
+	data := make(map[string]interface{})
+	data["ids"] = "[" + query.GetParam("id") + "]"
+	data["br"] = query.GetParamOrDefault("br", 999000)
+	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
+	r, err := responseDefault(post, urlCheckMusic, data, opt)
+	if err != nil {
+		return "", err
+	}
+	j, err := ReadJson(r)
+	if err != nil {
+		return "", err
+	}
+	c, err := j.Get("code").Int()
+	if err != nil {
+		return "", err
+	}
+	if c == 200 {
+		c, err = j.Get("data[0].code").Int()
+		if err != nil {
+			return "", err
+		}
+		if c == 200 {
+			return `{success: true, message: 'ok'}`, nil
+		}
+	}
+	return `{success: false, message: '暂无版权'}`, nil
+}
+
+//Comment 发送与删除评论
+func Comment(query *Query) (string, error) {
+	query.AddCookie("os", "pc")
+	data := make(map[string]interface{})
+	m := map[string]string{
+		"0": "delete",
+		"1": "add",
+		"2": "reply",
+	}
+	t := m[query.GetParam("t")]
+	m = map[string]string{
+		"0": "R_SO_4_",  //歌曲
+		"1": "R_MV_5_",  //MV
+		"2": "A_PL_0_",  //歌单
+		"3": "R_AL_3_",  //专辑
+		"4": "A_DJ_1_",  //电台,
+		"5": "R_VI_62_", //视频
+		"6": "A_EV_2_",  //动态
+	}
+	tp := m[query.GetParam("type")]
+	data["threadId"] = tp + query.GetParam("id")
+	if tp == "A_EV_2_" {
+		data["threadId"] = query.GetParam("threadId")
+	}
+	switch t {
+	case "add":
+		data["content"] = query.GetParam("content")
+	case "delete":
+		data["commentId"] = query.GetParam("commentId")
+	case "reply":
+		data["commentId"] = query.GetParam("commentId")
+		data["content"] = query.GetParam("content")
+	}
+	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
+	return responseDefault(post, fmt.Sprintf(urlComment, t), data, opt)
+}
+
+//CommentAlbum 专辑评论
+func CommentAlbum(query *Query) (string, error) {
+	query.AddCookie("os", "pc")
+	data := make(map[string]interface{})
+	id := query.GetParam("id")
+	data["rid"] = id
+	data["limit"] = query.GetParamOrDefault("limit", 20)
+	data["offset"] = query.GetParamOrDefault("offset", 0)
+	data["beforeTime"] = query.GetParamOrDefault("before", 0)
+	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
+	return responseDefault(post, fmt.Sprintf(urlCommentAlbum, id), data, opt)
+}
+
+//CommentDj 电台评论
+func CommentDj(query *Query) (string, error) {
+	query.AddCookie("os", "pc")
+	data := make(map[string]interface{})
+	id := query.GetParam("id")
+	data["rid"] = id
+	data["limit"] = query.GetParamOrDefault("limit", 20)
+	data["offset"] = query.GetParamOrDefault("offset", 0)
+	data["beforeTime"] = query.GetParamOrDefault("before", 0)
+	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
+	return responseDefault(post, fmt.Sprintf(urlCommentDj, id), data, opt)
 }

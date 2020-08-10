@@ -26,6 +26,10 @@ func initRoute() {
 		CaptchaSent,
 		CaptchaVerify,
 		CellphoneExistenceCheck,
+		CheckMusic,
+		Comment,
+		CommentAlbum,
+		CommentDj,
 	}
 	route = funcNames(f)
 }
