@@ -30,6 +30,7 @@ func initRoute() {
 		Comment,
 		CommentAlbum,
 		CommentDj,
+		CommentEvent,
 	}
 	route = funcNames(f)
 }

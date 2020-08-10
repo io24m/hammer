@@ -42,6 +42,7 @@ const (
 	urlComment                 string = "https://music.163.com/weapi/resource/comments/%s"
 	urlCommentAlbum            string = "https://music.163.com/weapi/v1/resource/comments/R_AL_3_%s"
 	urlCommentDj               string = "https://music.163.com/weapi/v1/resource/comments/A_DJ_1_%s"
+	urlCommentEvent            string = "https://music.163.com/weapi/v1/resource/comments/%s"
 )
 
 //Login 邮箱登录
@@ -480,4 +481,14 @@ func CommentDj(query *Query) (string, error) {
 	data["beforeTime"] = query.GetParamOrDefault("before", 0)
 	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
 	return responseDefault(post, fmt.Sprintf(urlCommentDj, id), data, opt)
+}
+
+//CommentEvent 获取动态评论
+func CommentEvent(query *Query) (string, error) {
+	data := make(map[string]interface{})
+	data["limit"] = query.GetParamOrDefault("limit", 20)
+	data["offset"] = query.GetParamOrDefault("offset", 0)
+	data["beforeTime"] = query.GetParamOrDefault("before", 0)
+	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
+	return responseDefault(post, fmt.Sprintf(urlCommentEvent, query.GetParam("threadId")), data, opt)
 }
