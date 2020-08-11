@@ -3,9 +3,8 @@ package down
 import (
 	"fmt"
 	jsonPkg "github.com/io24m/hammer/json"
-	"github.com/io24m/hammer/mp3"
 	"github.com/io24m/hammer/neteasecloudmusic"
-	"github.com/io24m/hammer/util"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -162,27 +161,27 @@ func down(cfg *neteasecloudmusic.Cfg, song *songDetails) {
 		return
 	}
 	defer resp.Body.Close()
-	//_, err = io.Copy(f, resp.Body)
+	_, err = io.Copy(f, resp.Body)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	//test
+	//bytes, err := util.ReadBytes(resp.Body)
 	//if err != nil {
 	//	fmt.Println(err)
 	//	return
 	//}
-	//test
-	bytes, err := util.ReadBytes(resp.Body)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	v2_3, err := mp3.Mp3_ID3V2_3(bytes)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	v2_3.Tag(mp3.TIT2, song.songName)
-	fmt.Println(v2_3.Tags())
-	_, err = f.Write(v2_3.Byte())
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	//v2_3, err := mp3.Mp3_ID3V2_3(bytes)
+	//if err != nil {
+	//	fmt.Println(err)
+	//	return
+	//}
+	//v2_3.Tag(mp3.TIT2, song.songName)
+	//fmt.Println(v2_3.Tags())
+	//_, err = f.Write(v2_3.Byte())
+	//if err != nil {
+	//	fmt.Println(err)
+	//	return
+	//}
 }
