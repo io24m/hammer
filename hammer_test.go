@@ -2,7 +2,8 @@ package hammer
 
 import (
 	"fmt"
-	mp3pkg "github.com/io24m/hammer/mp3"
+	jsonPkg "github.com/io24m/hammer/json"
+	mp3Pkg "github.com/io24m/hammer/mp3"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -32,7 +33,7 @@ func TestRun(t *testing.T) {
 
 func TestReadJson(t *testing.T) {
 	var s interface{}
-	j, _ := ReadJson(`{"q":"w","ss":[{"ss":null,"a":1,"b":2,"C":[1,2],"d":[{"e":"qw"},{"e":"qw"}]}]}`)
+	j, _ := jsonPkg.ReadJson(`{"q":"w","ss":[{"ss":null,"a":1,"b":2,"C":[1,2],"d":[{"e":"qw"},{"e":"qw"}]}]}`)
 	s = j.Get("q").String()
 	fmt.Println(s)
 	s = j.Get("w").String()
@@ -51,7 +52,7 @@ func TestMp3Read(t *testing.T) {
 	testTitle, _ := os.Create(`C:\down\NeteaseCloudMusic\testTitle.mp3`)
 	defer testTitle.Close()
 	bytes, _ := readBytes(test)
-	mp3, _ := mp3pkg.Mp3_ID3V2_3(bytes)
+	mp3, _ := mp3Pkg.Mp3_ID3V2_3(bytes)
 	//mp3.Tag(mp3pkg.TIT2, "test")
 	testTitle.Write(mp3.Byte())
 }
