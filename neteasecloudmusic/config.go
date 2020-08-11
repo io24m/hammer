@@ -1,4 +1,4 @@
-package hammer
+package neteasecloudmusic
 
 import (
 	"encoding/json"

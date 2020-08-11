@@ -1,9 +1,11 @@
-package hammer
+package down
 
 import (
 	"fmt"
 	jsonPkg "github.com/io24m/hammer/json"
 	"github.com/io24m/hammer/mp3"
+	"github.com/io24m/hammer/neteasecloudmusic"
+	"github.com/io24m/hammer/util"
 	"net/http"
 	"net/url"
 	"os"
@@ -13,7 +15,7 @@ import (
 )
 
 func DownPlayListSong() {
-	cfg := Config()
+	cfg := neteasecloudmusic.Config()
 	ids := getIds(cfg)
 	fmt.Println("find:", len(ids))
 	songs := getSongs(cfg, ids)
@@ -30,7 +32,7 @@ func DownPlayListSong() {
 	for _, v := range songs {
 		works <- struct{}{}
 		wg.Add(1)
-		go func(cfg *Cfg, song *songDetails) {
+		go func(cfg *neteasecloudmusic.Cfg, song *songDetails) {
 			defer wg.Done()
 			//url := song.url
 			path := cfg.SavePath + song.songName + `.` + song.songType
@@ -68,10 +70,10 @@ func merSong(s1 map[string]*songDetails, s2 map[string]*songDetails) {
 	}
 }
 
-func getIds(cfg *Cfg) []string {
-	query := &Query{}
+func getIds(cfg *neteasecloudmusic.Cfg) []string {
+	query := &neteasecloudmusic.Query{}
 	query.AddParam("id", cfg.PlayListId)
-	resp, err := PlaylistDetail(query)
+	resp, err := neteasecloudmusic.PlaylistDetail(query)
 	if err != nil {
 		panic(err)
 	}
@@ -90,10 +92,10 @@ func getIdArray(i interface{}) (res []string) {
 	return
 }
 
-func getSongs(cfg *Cfg, ids []string) (res map[string]*songDetails) {
-	query := &Query{}
+func getSongs(cfg *neteasecloudmusic.Cfg, ids []string) (res map[string]*songDetails) {
+	query := &neteasecloudmusic.Query{}
 	query.AddParam("id", strings.Join(ids, ","))
-	song, err := SongUrl(query)
+	song, err := neteasecloudmusic.SongUrl(query)
 	if err != nil {
 		panic(err)
 	}
@@ -103,13 +105,13 @@ func getSongs(cfg *Cfg, ids []string) (res map[string]*songDetails) {
 	return
 }
 
-func getSongNames(cfg *Cfg, ids []string) (res map[string]*songDetails) {
+func getSongNames(cfg *neteasecloudmusic.Cfg, ids []string) (res map[string]*songDetails) {
 	params := strings.Join(ids, ",")
-	query := &Query{
+	query := &neteasecloudmusic.Query{
 		Param: url.Values{},
 	}
 	query.Param.Add("ids", params)
-	detail, err := SongDetail(query)
+	detail, err := neteasecloudmusic.SongDetail(query)
 	if err != nil {
 		panic(err)
 	}
@@ -147,7 +149,7 @@ func id2name(i interface{}) map[string]*songDetails {
 	return res
 }
 
-func down(cfg *Cfg, song *songDetails) {
+func down(cfg *neteasecloudmusic.Cfg, song *songDetails) {
 	path := cfg.SavePath + song.songName + `.` + song.songType
 	f, err := os.Create(path)
 	if err != nil {
@@ -166,7 +168,7 @@ func down(cfg *Cfg, song *songDetails) {
 	//	return
 	//}
 	//test
-	bytes, err := readBytes(resp.Body)
+	bytes, err := util.ReadBytes(resp.Body)
 	if err != nil {
 		fmt.Println(err)
 		return

@@ -1,7 +1,6 @@
-package hammer
+package neteasecloudmusic
 
 import (
-	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -42,20 +41,4 @@ func getCookie(cookies []*http.Cookie, name string, defaultValue ...string) stri
 		return ""
 	}
 	return defaultValue[0]
-}
-
-func readBytes(reader io.Reader) ([]byte, error) {
-	var chunk []byte
-	buf := make([]byte, 1024)
-	for {
-		n, err := reader.Read(buf)
-		if err != nil && err != io.EOF {
-			return nil, err
-		}
-		if n == 0 {
-			break
-		}
-		chunk = append(chunk, buf[:n]...)
-	}
-	return chunk, nil
 }

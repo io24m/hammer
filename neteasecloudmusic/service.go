@@ -1,10 +1,12 @@
-package hammer
+package neteasecloudmusic
 
 import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/io24m/hammer/crypto"
+	jaonPkg "github.com/io24m/hammer/json"
 	"io/ioutil"
 	"regexp"
 	"strconv"
@@ -150,7 +152,7 @@ func PlaylistDetail(query *Query) (string, error) {
 //SongUrl 歌曲链接
 func SongUrl(query *Query) (string, error) {
 	if MUSIC_U := query.GetCookie("MUSIC_U"); strings.TrimSpace(MUSIC_U) == "" {
-		query.AddCookie("_ntes_nuid", hex.EncodeToString(key(16)))
+		query.AddCookie("_ntes_nuid", hex.EncodeToString(crypto.RKey(16)))
 	}
 	query.AddCookie("os", "pc")
 	data := make(map[string]interface{}, 0)
@@ -404,7 +406,7 @@ func CheckMusic(query *Query) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	j, err := ReadJson(r)
+	j, err := jaonPkg.ReadJson(r)
 	if err != nil {
 		return "", err
 	}
