@@ -39,12 +39,28 @@ func (json *Json) get(m map[int]*nodeKey) *Json {
 	j = json.json
 	l := len(m)
 	for i := 0; i < l; i++ {
-		j = g(j, m[i])
+		key := m[i]
+		if key.name == "" {
+			j = gs(j, key)
+			continue
+		}
+		j = gm(j, key)
 	}
 	return &Json{json: j}
 }
 
-func g(i interface{}, key *nodeKey) interface{} {
+func gs(i interface{}, key *nodeKey) interface{} {
+	s, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	if key.index >= len(s) {
+		return nil
+	}
+	return s[key.index]
+}
+
+func gm(i interface{}, key *nodeKey) interface{} {
 	m, ok := i.(map[string]interface{})
 	if !ok {
 		return nil
