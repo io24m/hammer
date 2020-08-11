@@ -2,6 +2,7 @@ package hammer
 
 import (
 	"fmt"
+	"github.com/io24m/hammer/jsongo"
 	"github.com/io24m/hammer/mp3"
 	"net/http"
 	"net/url"
@@ -74,7 +75,7 @@ func getIds(cfg *Cfg) []string {
 	if err != nil {
 		panic(err)
 	}
-	json, _ := ReadJson(resp)
+	json, _ := jsongo.ReadJson(resp)
 	ids := json.Get("playlist.trackIds").Map("id").Strings()
 	return ids
 }
@@ -96,7 +97,7 @@ func getSongs(cfg *Cfg, ids []string) (res map[string]*songDetails) {
 	if err != nil {
 		panic(err)
 	}
-	json, _ := ReadJson(song)
+	json, _ := jsongo.ReadJson(song)
 	node := json.Get("data").Map().Values()
 	res = id2url(node)
 	return
@@ -112,7 +113,7 @@ func getSongNames(cfg *Cfg, ids []string) (res map[string]*songDetails) {
 	if err != nil {
 		panic(err)
 	}
-	json, _ := ReadJson(detail)
+	json, _ := jsongo.ReadJson(detail)
 	idname := json.Get("songs").Map().Values()
 	res = id2name(idname)
 	return

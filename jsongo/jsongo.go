@@ -1,4 +1,4 @@
-package hammer
+package jsongo
 
 import (
 	"encoding/json"
@@ -7,41 +7,41 @@ import (
 	"strings"
 )
 
-type IJson struct {
+type Json struct {
 	json interface{}
 }
 
-func ReadJson(jsonStr string) (*IJson, error) {
-	j := &IJson{
+func ReadJson(s string) (*Json, error) {
+	j := &Json{
 		json: make(map[string]interface{}),
 	}
-	err := json.Unmarshal([]byte(jsonStr), &j.json)
+	err := json.Unmarshal([]byte(s), &j.json)
 	if err != nil {
 		return nil, err
 	}
 	return j, nil
 }
 
-func (json *IJson) Get(keys ...string) *IJson {
+func (json *Json) Get(keys ...string) *Json {
 	if len(keys) == 0 {
-		return &IJson{json: json.json}
+		return &Json{json: json.json}
 	}
 	key := keys[0]
 	m, err := jsonKey(key)
 	if err != nil {
-		return &IJson{}
+		return &Json{}
 	}
 	return json.get(m)
 }
 
-func (json *IJson) get(m map[int]*nodeKey) *IJson {
+func (json *Json) get(m map[int]*nodeKey) *Json {
 	var j interface{}
 	j = json.json
 	l := len(m)
 	for i := 0; i < l; i++ {
 		j = g(j, m[i])
 	}
-	return &IJson{json: j}
+	return &Json{json: j}
 }
 
 func g(i interface{}, key *nodeKey) interface{} {
@@ -61,15 +61,15 @@ func g(i interface{}, key *nodeKey) interface{} {
 	return s[key.index]
 }
 
-type IJsonNodeList struct {
-	nodes []*IJson
+type JsonNodeList struct {
+	nodes []*Json
 }
 
-func (jsonList *IJsonNodeList) Nodes() []*IJson {
+func (jsonList *JsonNodeList) Nodes() []*Json {
 	return jsonList.nodes
 }
 
-func (jsonList *IJsonNodeList) Values() []interface{} {
+func (jsonList *JsonNodeList) Values() []interface{} {
 	r := make([]interface{}, 0)
 	for _, v := range jsonList.nodes {
 		r = append(r, v.Value())
@@ -77,7 +77,7 @@ func (jsonList *IJsonNodeList) Values() []interface{} {
 	return r
 }
 
-func (jsonList *IJsonNodeList) Integers() ([]int64, error) {
+func (jsonList *JsonNodeList) Integers() ([]int64, error) {
 	r := make([]int64, 0)
 	for _, v := range jsonList.nodes {
 		i, err := v.Int()
@@ -89,7 +89,7 @@ func (jsonList *IJsonNodeList) Integers() ([]int64, error) {
 	return r, nil
 }
 
-func (jsonList *IJsonNodeList) Floats() ([]float64, error) {
+func (jsonList *JsonNodeList) Floats() ([]float64, error) {
 	r := make([]float64, 0)
 	for _, v := range jsonList.nodes {
 		i, err := v.Float()
@@ -101,7 +101,7 @@ func (jsonList *IJsonNodeList) Floats() ([]float64, error) {
 	return r, nil
 }
 
-func (jsonList *IJsonNodeList) Strings() []string {
+func (jsonList *JsonNodeList) Strings() []string {
 	r := make([]string, 0)
 	for _, v := range jsonList.nodes {
 		r = append(r, v.String())
@@ -109,7 +109,7 @@ func (jsonList *IJsonNodeList) Strings() []string {
 	return r
 }
 
-func (jsonList *IJsonNodeList) Booleans() ([]bool, error) {
+func (jsonList *JsonNodeList) Booleans() ([]bool, error) {
 	r := make([]bool, 0)
 	for _, v := range jsonList.nodes {
 		i, err := v.Bool()
@@ -121,48 +121,48 @@ func (jsonList *IJsonNodeList) Booleans() ([]bool, error) {
 	return r, nil
 }
 
-func (node *IJson) Map(keys ...string) *IJsonNodeList {
-	list := &IJsonNodeList{}
-	list.nodes = make([]*IJson, 0)
+func (node *Json) Map(keys ...string) *JsonNodeList {
+	list := &JsonNodeList{}
+	list.nodes = make([]*Json, 0)
 	ls, ok := node.json.([]interface{})
 	if !ok {
 		list.nodes = append(list.nodes, node)
 		return list
 	}
 	for _, v := range ls {
-		iJson := &IJson{json: v}
+		iJson := &Json{json: v}
 		jsonNode := iJson.Get(keys...)
 		list.nodes = append(list.nodes, jsonNode)
 	}
 	return list
 }
 
-func (node *IJson) Value() interface{} {
+func (node *Json) Value() interface{} {
 	return node.json
 }
 
-func (node *IJson) Bool() (bool, error) {
+func (node *Json) Bool() (bool, error) {
 	if b, ok := node.json.(bool); ok {
 		return b, nil
 	}
 	return false, errors.New("not bool")
 }
 
-func (node *IJson) Int() (int64, error) {
+func (node *Json) Int() (int64, error) {
 	if f, ok := node.json.(float64); ok {
 		return int64(f), nil
 	}
 	return 0, errors.New("not int")
 }
 
-func (node *IJson) Float() (float64, error) {
+func (node *Json) Float() (float64, error) {
 	if f, ok := node.json.(float64); ok {
 		return f, nil
 	}
 	return 0, errors.New("not float")
 }
 
-func (node *IJson) String() string {
+func (node *Json) String() string {
 	switch s := node.json.(type) {
 	default:
 		return ""
