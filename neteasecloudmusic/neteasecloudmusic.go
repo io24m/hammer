@@ -21,7 +21,11 @@ func Run() {
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	f := route[r.URL.Path]
 	if f == nil {
-		w.Write([]byte("run success"))
+		w.Write([]byte("run success,eg:\n"))
+		for k, _ := range route {
+			w.Write([]byte(k))
+			w.Write([]byte("\n"))
+		}
 		return
 	}
 	s, err := f(&Query{

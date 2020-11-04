@@ -11,7 +11,7 @@ import (
 
 func RsaEncryptNoPadding(data, key []byte) (string, error) {
 	//解密pem格式的公钥
-	block, _ := pem.Decode([]byte(key))
+	block, _ := pem.Decode(key)
 	if block == nil {
 		return "", errors.New("key error")
 	}
