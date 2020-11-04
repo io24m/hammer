@@ -37,4 +37,8 @@ func initRoute() {
 		CommentMusic,
 	}
 	route = funcNames(f)
+	urls = make([]string, 0)
+	for k, _ := range route {
+		urls = append(urls, k+"\n")
+	}
 }

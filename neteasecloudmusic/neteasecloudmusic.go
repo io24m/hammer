@@ -22,9 +22,8 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	f := route[r.URL.Path]
 	if f == nil {
 		w.Write([]byte("run success,eg:\n"))
-		for k, _ := range route {
-			w.Write([]byte(k))
-			w.Write([]byte("\n"))
+		for _, v := range urls {
+			w.Write([]byte(v))
 		}
 		return
 	}
@@ -53,6 +52,7 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 type requestFunc func(*Query) (string, error)
 
 var route map[string]requestFunc
+var urls []string
 
 func funcNames(f []requestFunc) map[string]requestFunc {
 	reg, _ := regexp.Compile(`[A-Z]`)
