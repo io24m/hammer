@@ -19,6 +19,16 @@ func Run() {
 }
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Access-Control-Allow-Credentials", "true")
+	origin := r.Header.Get("origin")
+	if strings.TrimSpace(origin) == "" {
+		w.Header().Add("Access-Control-Allow-Origin", "*")
+	} else {
+		w.Header().Add("Access-Control-Allow-Origin", origin)
+	}
+	w.Header().Add("Access-Control-Allow-Headers", "X-Requested-With,Content-Type")
+	w.Header().Add("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS")
+	w.Header().Add("Content-Type", "application/json; charset=utf-8")
 	f := route[r.URL.Path]
 	if f == nil {
 		w.Write([]byte("run success,eg:\n"))
@@ -32,16 +42,7 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 		Body:    r.Body,
 		Param:   r.URL.Query(),
 	})
-	w.Header().Add("Access-Control-Allow-Credentials", "true")
-	origin := r.Header.Get("origin")
-	if strings.TrimSpace(origin) == "" {
-		w.Header().Add("Access-Control-Allow-Origin", "*")
-	} else {
-		w.Header().Add("Access-Control-Allow-Origin", origin)
-	}
-	w.Header().Add("Access-Control-Allow-Headers", "X-Requested-With,Content-Type")
-	w.Header().Add("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS")
-	w.Header().Add("Content-Type", "application/json; charset=utf-8")
+
 	if err != nil {
 		w.Write([]byte(err.Error()))
 		return
