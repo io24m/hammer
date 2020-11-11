@@ -35,6 +35,7 @@ func initRoute() {
 		CommentHotwallList,
 		CommentLike,
 		CommentMusic,
+		Search,
 	}
 	route = funcNames(f)
 	urls = make([]string, 0)

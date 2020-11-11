@@ -49,6 +49,7 @@ const (
 	urlCommentHotwallList      string = "https://music.163.com/api/comment/hotwall/list/get"
 	urlCommentLike             string = "https://music.163.com/weapi/v1/comment/%s"
 	urlCommentMusic            string = "https://music.163.com/api/v1/resource/comments/R_SO_4_%s"
+	urlSearch                  string = "https://music.163.com/weapi/search/get"
 )
 
 //Login 邮箱登录
@@ -564,4 +565,16 @@ func CommentMusic(query *Query) (string, error) {
 	data["beforeTime"] = query.GetParamOrDefault("before", 0)
 	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
 	return responseDefault(post, fmt.Sprintf(urlCommentMusic, id), data, opt)
+}
+
+//Search 搜索：
+func Search(query *Query) (string, error) {
+	data := make(map[string]interface{})
+	data["s"] = query.GetParam("keywords")
+	// 1: 单曲, 10: 专辑, 100: 歌手, 1000: 歌单, 1002: 用户, 1004: MV, 1006: 歌词, 1009: 电台, 1014: 视频
+	data["type"] = query.GetParamOrDefault("type", "1")
+	data["limit"] = query.GetParamOrDefault("limit", "30")
+	data["offset"] = query.GetParamOrDefault("offset", "30")
+	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
+	return responseDefault(post, urlSearch, data, opt)
 }
