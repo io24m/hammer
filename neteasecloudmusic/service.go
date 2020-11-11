@@ -574,7 +574,7 @@ func Search(query *Query) (string, error) {
 	// 1: 单曲, 10: 专辑, 100: 歌手, 1000: 歌单, 1002: 用户, 1004: MV, 1006: 歌词, 1009: 电台, 1014: 视频
 	data["type"] = query.GetParamOrDefault("type", "1")
 	data["limit"] = query.GetParamOrDefault("limit", "30")
-	data["offset"] = query.GetParamOrDefault("offset", "30")
+	data["offset"] = query.GetParamOrDefault("offset", "0")
 	opt := &options{crypto: weapi, cookies: query.Cookies, proxy: query.Proxy}
 	return responseDefault(post, urlSearch, data, opt)
 }
